@@ -1,19 +1,6 @@
 #include "../headers/scene_builder.h"
 
-SceneBuilder::SceneBuilder(string path) {
-    regex Material_reg("Material\\s+[a-z1-9]+\\s*\\{\n*[^\\}]*");
-    regex Sphere_reg ("Sphere\\s*\\{\n*[^\\}]*");
-    regex Camera_reg ("Camera\\s*\\{\n*[^\\}]*");
-
-
-    string file = readFile(path);
-
-    buildMaterials(matchReg(file, Material_reg));
-    matchReg(file, Sphere_reg);
-    matchReg(file, Camera_reg);
-}
-
-string SceneBuilder::readFile(string path) {
+string readFile(string path) {
     string res = "";
     string line;
     ifstream myfile (path);
@@ -25,6 +12,22 @@ string SceneBuilder::readFile(string path) {
     }
     return res;
 }
+
+
+
+SceneBuilder::SceneBuilder(string path) {
+    regex Material_reg("Material\\s+[a-z0-9]+\\s*\\{\n*[^\\}]*");
+    regex Sphere_reg ("Sphere\\s*\\{\n*[^\\}]*");
+    regex Camera_reg ("Camera\\s*\\{\n*[^\\}]*");
+
+
+    string file = readFile(path);
+
+    buildMaterials(matchReg(file, Material_reg));
+    buildSpheres(matchReg(file, Sphere_reg));
+    matchReg(file, Camera_reg);
+}
+
 
 vector<string> SceneBuilder::matchReg(string str, regex r) {
     vector<string> res;
@@ -44,6 +47,16 @@ vector<string> SceneBuilder::matchReg(string str, regex r) {
     return res;
 }
 
+regex searchVector(string begin) {
+    regex res(begin + "\\s*=\\s*\\(\\s*([+-]?([0-9]*[.])?[0-9]+)\\s*,\\s*([+-]?([0-9]*[.])?[0-9]+)\\s*,\\s*([+-]?([0-9]*[.])?[0-9]+)\\s*\\)");
+    return res;
+}
+
+regex searchFloat(string begin) {
+    regex r(begin + "\\s*=\\s*([+-]?([0-9]*[.])?[0-9]+)");
+    return r;
+}
+
 void throwErrorMat() {
     cerr << "Error in materials declaration." << endl;
     exit(-1);
@@ -55,11 +68,12 @@ void SceneBuilder::buildMaterials(vector<string> materials_str) {
 
     for (int i = 0; i<materials_str.size(); i++) {
         const string s = materials_str[i];
-        /******* Search name *******/
-        regex name_rgx ("\\s+([a-z1-9]+) *\\{");
         smatch match;
+
+        /******* Search name *******/
+        regex name_rgx ("\\s+([a-z0-9]+) *\\{");
         if(regex_search(s.begin(), s.end(), match, name_rgx))
-            materials_name.push_back(match[1]);
+            this->materials_name.push_back(match[1]);
 
         /******* Search light *******/
         regex light_rgx ("(light\\s*=\\s*true)");
@@ -70,29 +84,127 @@ void SceneBuilder::buildMaterials(vector<string> materials_str) {
 
         /******* Search color *******/
         glm::vec4 mat(-1);
-        regex color_rgx ("color\\s*=\\s*\\(\\s*([0-9]+)\\s*,\\s*([0-9]+)\\s*,\\s*([0-9]+)\\s*\\)");
+        regex color_rgx = searchVector("color");
         if(regex_search(s.begin(), s.end(), match, color_rgx))
-            mat = glm::vec4(stoi(match[1]), stoi(match[2]), stoi(match[3]), -1);
+            mat = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
         else
             throwErrorMat();
 
         /******* Search emit/roughness *******/
-        regex alpha_rgx ("(roughness|emit_intensity)\\s*=\\s*([0-9](.[0-9]+)?)");
+        regex alpha_rgx = searchFloat("(roughness|emit_intensity)");
         if(regex_search(s.begin(), s.end(), match, alpha_rgx))
             mat.w = stof(match[2]);
         else
             throwErrorMat();
         
-        materials.push_back(mat);
+        this->materials.push_back(mat);
 
     }
+}
 
-    for (int i = 0; i<materials.size(); i++)
-        cout << materials[i].x << " " << materials[i].y << " " << materials[i].z << " " << materials[i].w << endl;
+void throwErrorSphere() {
+    cerr << "Error in spheres declaration." << endl;
+    exit(-1);
+}
 
-    for (string s : materials_name)
-        cout << s << endl;
-    
-    for (bool b : matIsLight)
-        cout << b << endl;
+void SceneBuilder::buildSpheres(vector<string> spheres_str) {
+    if (spheres_str.size() < 1)
+        throwErrorMat();
+
+    vector<glm::vec4> materials_n;
+    vector<bool> matIsLight_n;
+    for (int i = 0; i<spheres_str.size(); i++) {
+        const string s = spheres_str[i];
+        smatch match;
+
+        /******* Search material *******/
+        regex mat_name_rgx ("material\\s*=\\s*([a-z0-9]+)");
+        if(regex_search(s.begin(), s.end(), match, mat_name_rgx)) {
+            bool found = false;
+            for (int i = 0; i<this->materials_name.size(); i++) {
+                if (match[1] == this->materials_name[i]) {
+                    materials_n.push_back(this->materials[i]);
+                    matIsLight_n.push_back(this->matIsLight[i]);
+                    found = true;
+                    break;
+                }
+            }
+            if (not found) throwErrorSphere();
+        }
+
+        else
+            throwErrorSphere();
+
+        /******* Search center *******/
+        glm::vec4 sphere(-1);
+        regex center_rgx = searchVector("center");
+        if(regex_search(s.begin(), s.end(), match, center_rgx))
+            sphere = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
+        else
+            throwErrorSphere();
+        
+
+        /******* Search radius *******/
+        regex radius_rgx = searchFloat("radius");
+        if(regex_search(s.begin(), s.end(), match, radius_rgx))
+            sphere.w = stof(match[1]);
+        else
+            throwErrorSphere();
+
+        this->spheres.push_back(sphere);
+    }
+
+    this->materials = materials_n;
+    this->matIsLight = matIsLight_n;
+
+}
+
+
+
+void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix) {
+
+	glm::vec3 eye_pos = glm::vec3(0, 0, 0.5);
+	glm::mat4 viewMatrix = glm::lookAt(
+		eye_pos,
+		glm::vec3(0.f, 0.f, 0.f),
+		glm::vec3(0, 1, 0)
+	);
+
+
+    glm::mat4 PVMatrix = glm::inverse(projection_matrix * viewMatrix);
+
+
+
+    glm::vec4 *spheres_a = &this->spheres[0];
+    glm::vec4 *materials_a = &this->materials[0];
+    int nb_spheres = this->spheres.size();
+
+    int isLight = -1;
+    for (int i = 0 ; i<matIsLight.size(); i++) {
+        if (matIsLight[i]){
+            isLight = i;
+            break;
+        }
+    }
+
+	GLuint uniformEyePos = glGetUniformLocation(ComputeShaderProgram, "eyePos");
+    GLuint uniformPV = glGetUniformLocation(ComputeShaderProgram, "PVMatrix");
+    GLuint uniformSpheres = glGetUniformLocation(ComputeShaderProgram, "spheres");
+	GLuint uniformMaterials = glGetUniformLocation(ComputeShaderProgram, "materials");
+	GLuint uniformIsLight = glGetUniformLocation(ComputeShaderProgram, "isLight");
+    GLuint u_NUM_SPHERES = glGetUniformLocation(ComputeShaderProgram, "NUM_SPHERES");
+
+    glUseProgram(ComputeShaderProgram);
+
+    glUniformMatrix4fv(uniformPV, 1, GL_FALSE, glm::value_ptr(PVMatrix));
+	glUniform3fv(uniformEyePos, 1, glm::value_ptr(eye_pos));
+
+    glUseProgram(ComputeShaderProgram);
+    glUniform1i(u_NUM_SPHERES, nb_spheres);
+    glUniform4fv(uniformSpheres, nb_spheres, glm::value_ptr(spheres_a[0]));
+	glUniform4fv(uniformMaterials, nb_spheres, glm::value_ptr(materials_a[0]));
+	glUniform1i(uniformIsLight, isLight);
+
+    glUseProgram(0);
+
 }

@@ -1,25 +1,54 @@
+Material green {
+    color = (0, 0.5, 0.7)
+    roughness = 1.0
+}
+
 Material purple {
-    color = (255, 0, 255)
-    roughness = 0.3
+    color = (0.4, 0.2, 0.4)
+    roughness = 0.2
+}
+
+Material blue {
+    color = (0.1, 0.5, 0.4)
+    roughness = 1
 }
 
 Material light{
     light = true
-    color = (255,255,255)
+    color = (1,1,1)
     emit_intensity = 1
 }
 
+
+
+
 Sphere {
-    center = (0, 0, 1)
-    radius = 0.40
+    center = (-1.0, 0.2, -2.3)
+    radius = 1.3
     material = purple
 }
 
+
 Sphere {
-    center = (0, 0, -1)
-    radius = 0.2
+    center = (1, -0.6, -2.3)
+    radius = 0.7
+    material = blue
+}
+
+Sphere {
+    center = (0.5, 0, 2)
+    radius = 0.5
+    material = green
+}
+
+Sphere {
+    center = (1.75, 1, 0.5)
+    radius = 1
     material = light
 }
+
+
+
 
 Camera {
     position = (0, 0, 0)

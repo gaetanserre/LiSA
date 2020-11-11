@@ -24,4 +24,4 @@ clean :
 	rm ray_tracing
 
 run :
-	./ray_tracing 500
+	./ray_tracing ../scene.rto 500

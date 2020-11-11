@@ -1,4 +1,5 @@
 #include "opengl_utils.h"
+#include "scene_builder.h"
 
 class RayTracingEngine {
     public:
@@ -11,7 +12,7 @@ class RayTracingEngine {
                     const char* cshader_path
         );
 
-        void run(int nbFrames);
+        void run(int nbFrames, string scene_file_path);
 
     private:
         GLuint quad_Tex;

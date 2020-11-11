@@ -12,17 +12,15 @@ class SceneBuilder {
 
     public:
         SceneBuilder(string path);
+        void sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix);
+    
+    private:
         vector<glm::vec4> spheres;
         vector<glm::vec4> materials;
         Camera camera;
-        int isLight;
-        int nb_spheres;
-    
-    
-    private:
+
         vector<string> materials_name;
         vector<bool> matIsLight; 
-        string readFile(string path);
         vector<string> matchReg(string str, regex r);
         void buildMaterials(vector<string> materials_str);
         void buildSpheres(vector<string> spheres_str);
