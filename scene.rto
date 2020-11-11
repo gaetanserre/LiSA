@@ -1,0 +1,27 @@
+Material purple {
+    color = (255, 0, 255)
+    roughness = 0.3
+}
+
+Material light{
+    light = true
+    color = (255,255,255)
+    emit_intensity = 1
+}
+
+Sphere {
+    center = (0, 0, 1)
+    radius = 0.40
+    material = purple
+}
+
+Sphere {
+    center = (0, 0, -1)
+    radius = 0.2
+    material = light
+}
+
+Camera {
+    position = (0, 0, 0)
+    look_at = (0, 0, 0)
+}

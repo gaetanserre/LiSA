@@ -1,11 +1,12 @@
 #include "headers/engine.h"
 #include <stdio.h>
+#include "headers/scene_builder.h"
 
 int main(int argc, char** argv) {
 
-	const char *fshader_path = "/home/gaetan/Documents/Projets/Ray Tracing/Shaders/vf_shaders/fragment_shader.glsl";
-	const char *vshader_path = "/home/gaetan/Documents/Projets/Ray Tracing/Shaders/vf_shaders/vertex_shader.glsl";
-	const char *cshader_path = "/home/gaetan/Documents/Projets/Ray Tracing/Shaders/compute_shader/compute_shader_MC.glsl";
+	/*const char *fshader_path = "/home/gaetan/Documents/Projets/Ray-Tracing-OpenGL/Shaders/vf_shaders/fragment_shader.glsl";
+	const char *vshader_path = "/home/gaetan/Documents/Projets/Ray-Tracing-OpenGL/Shaders/vf_shaders/vertex_shader.glsl";
+	const char *cshader_path = "/home/gaetan/Documents/Projets/Ray-Tracing-OpenGL/Shaders/compute_shader/compute_shader_MC.glsl";
 
 	int WIDTH = 1280, HEIGTH = 720;
 
@@ -16,9 +17,11 @@ int main(int argc, char** argv) {
 
 	int nbFrames = atoi(argv[1]);
 	
-	RayTracingEngine engine = RayTracingEngine("Ray tracing engine OpengGL", WIDTH, HEIGTH, vshader_path, fshader_path, cshader_path);
+	RayTracingEngine engine("Ray tracing engine OpengGL", WIDTH, HEIGTH, vshader_path, fshader_path, cshader_path);
 
-	engine.run(nbFrames);
+	engine.run(nbFrames);*/
+
+	SceneBuilder sb("../scene.rto");
 
 	return 0;
 

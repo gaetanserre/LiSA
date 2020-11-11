@@ -8,6 +8,8 @@ uniform int nb_frames;
 
 
 uniform vec4 spheres[100];
+uniform vec4 materials[100];
+uniform int isLight;
 uniform int NUM_SPHERES;
 
 layout(local_size_x = 20, local_size_y = 20) in;
@@ -27,13 +29,13 @@ vec3 Rand3Normal() {
 }
 
 struct Material {
-    vec4 color;
+    vec3 color;
     float roughness;
     bool emit;
     float emit_intensity;
 };
 
-Material buildMaterial(vec4 color, float roughness) {
+Material buildMaterial(vec3 color, float roughness) {
     Material m = {
         color,
         roughness,
@@ -43,7 +45,7 @@ Material buildMaterial(vec4 color, float roughness) {
     return m;
 }
 
-Material buildLight(vec4 emit_color, float intensity) {
+Material buildLight(vec3 emit_color, float intensity) {
     Material m = {
         emit_color,
         0,
@@ -66,7 +68,7 @@ Intersection buildIntersection() {
         -1,
         vec3(-1),
         vec3(-1),
-        buildMaterial(vec4(-1), -1),
+        buildMaterial(vec3(-1), -1),
         false
     };
     return i;
@@ -92,33 +94,32 @@ struct Plane {
 Plane plane1 = {
     vec3(0, -1.3, 0),
     vec3(0, 1, 0),
-    buildMaterial(vec4(1, 0, 0, 1), 1)
+    buildMaterial(vec3(1, 0, 0), 1)
 };
 
 Plane[] planes = {
     plane1
 };
 
-const vec4 ambient_color = vec4(1, 1, 1, 1);
+const vec3 ambient_color = vec3(1, 1, 1);
 const float ambient_intensity = 0.05;
 const int NUM_PLANES = 1;
 
-Sphere transformSpheres(vec4 s, bool light) {
-    if (light) {
-        Sphere sphere = {
-            s.xyz,
-            s.w,
-            buildLight(vec4(1, 1, 1, 1), 1.)
-        };
-        return sphere;
-    } else {
-        Sphere sphere = {
-            s.xyz,
-            s.w,
-            buildMaterial(vec4(0.4, 0.2, 0.4, 1), 0.0)
-        };
-        return sphere;
-    }
+Material transformMaterial(int idx) {
+    if (isLight == idx)
+        return buildLight(materials[idx].xyz, materials[idx].w);
+    else
+        return buildMaterial(materials[idx].xyz, materials[idx].w);
+}
+
+Sphere transformSpheres(int idx) {
+    Material m = transformMaterial(idx);
+    Sphere sphere = {
+        spheres[idx].xyz,
+        spheres[idx].w,
+        m
+    };
+    return sphere;
 }
 
 
@@ -147,7 +148,7 @@ float intersectSpheres(Ray ray, inout Intersection intersection) {
     Intersection temp = buildIntersection();
 
     for(int i = 0; i<NUM_SPHERES; i++) {
-        bool inter = intersectSphere(ray, transformSpheres(spheres[i], i==(NUM_SPHERES-1)), temp);
+        bool inter = intersectSphere(ray, transformSpheres(i), temp);
 
         if(inter && temp.t < minDist) {
             minDist = temp.t;
@@ -202,10 +203,10 @@ Intersection intersectObjects(Ray ray) {
         return intersection_planes;
 }
 
-vec4 trace(Ray ray) {
-    vec4 mask = vec4(1);
-    vec4 accumulator = vec4(0);
-    for(int i = 0; i<10; i++) {
+vec3 trace(Ray ray) {
+    vec3 mask = vec3(1);
+    vec3 accumulator = vec3(0);
+    for(int i = 0; i<30; i++) {
         Intersection intersection = intersectObjects(ray);
 
         if(!intersection.hit) {
@@ -216,7 +217,7 @@ vec4 trace(Ray ray) {
             } else {
                 mask *= intersection.material.color;
 
-                vec3 lp = spheres[NUM_SPHERES-1].xyz + Rand3Normal() * spheres[NUM_SPHERES-1].w;
+                vec3 lp = spheres[isLight].xyz + Rand3Normal() * spheres[isLight].w;
                 vec3 lray = normalize(lp - intersection.hitPoint);
                 Ray shadow_ray = {
                     intersection.hitPoint + 0.0001 * lray,
@@ -258,7 +259,7 @@ void main() {
     dir = normalize(dir);
 
     Ray ray = {eyePos, vec3(dir)};
-    vec4 n_color = trace(ray) / nb_frames;
+    vec3 n_color = trace(ray) / nb_frames;
     vec4 o_color = imageLoad(framebuffer, pix);
-    imageStore(framebuffer, pix, n_color + o_color);
+    imageStore(framebuffer, pix, vec4(n_color, 1) + o_color);
 }
