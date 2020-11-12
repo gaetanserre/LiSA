@@ -1,6 +1,6 @@
 #include "../headers/scene_builder.h"
 
-string readFile(string path) {
+string readFile(char* path) {
     string res = "";
     string line;
     ifstream myfile (path);
@@ -13,9 +13,11 @@ string readFile(string path) {
     return res;
 }
 
+SceneBuilder::SceneBuilder() {
+}
 
 
-SceneBuilder::SceneBuilder(string path) {
+SceneBuilder::SceneBuilder(char* path) {
     regex Material_reg("Material\\s+[a-z0-9]+\\s*\\{\n*[^\\}]*");
     regex Sphere_reg ("Sphere\\s*\\{\n*[^\\}]*");
     regex Camera_reg ("Camera\\s*\\{\n*[^\\}]*");
@@ -25,7 +27,7 @@ SceneBuilder::SceneBuilder(string path) {
 
     buildMaterials(matchReg(file, Material_reg));
     buildSpheres(matchReg(file, Sphere_reg));
-    matchReg(file, Camera_reg);
+    buildCamera(matchReg(file, Camera_reg));
 }
 
 
@@ -159,14 +161,51 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
 
 }
 
+void throwErrorCamera() {
+    cerr << "Error in camera declaration." << endl;
+    exit(-1);
+}
+
+void SceneBuilder::buildCamera(vector<string> camera_str) {
+    if (camera_str.size() != 1)
+        throwErrorCamera();
+    
+    const string s = camera_str[0];
+    glm::vec3 pos;
+    glm::vec3 look_at;
+
+    smatch match;
+
+    /******* Search position *******/
+    regex position_rgx = searchVector("position");
+    if(regex_search(s.begin(), s.end(), match, position_rgx))
+        pos = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
+    else
+        throwErrorCamera();
+
+    /******* Search lookAt *******/
+    regex look_at_rgx = searchVector("look_at");
+    if(regex_search(s.begin(), s.end(), match, look_at_rgx))
+        look_at = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
+    else
+        throwErrorCamera();
+
+    Camera c = {
+        pos,
+        look_at
+    };
+
+    this->camera = c;
+
+}
 
 
 void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix) {
 
 	glm::vec3 eye_pos = glm::vec3(0, 0, 0.5);
 	glm::mat4 viewMatrix = glm::lookAt(
-		eye_pos,
-		glm::vec3(0.f, 0.f, 0.f),
+		this->camera.pos,
+		this->camera.look_at,
 		glm::vec3(0, 1, 0)
 	);
 

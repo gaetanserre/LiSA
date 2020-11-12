@@ -11,7 +11,8 @@ struct Camera {
 class SceneBuilder {
 
     public:
-        SceneBuilder(string path);
+        SceneBuilder();
+        SceneBuilder(char* path);
         void sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix);
     
     private:
@@ -24,5 +25,5 @@ class SceneBuilder {
         vector<string> matchReg(string str, regex r);
         void buildMaterials(vector<string> materials_str);
         void buildSpheres(vector<string> spheres_str);
-        void buildCamera(vector<string> camera);
+        void buildCamera(vector<string> camera_str);
 };

@@ -4,6 +4,7 @@
 class RayTracingEngine {
     public:
         RayTracingEngine(
+                    char* scene_file_path,
                     const char* window_name,
                     int width,
                     int heigth,
@@ -12,9 +13,10 @@ class RayTracingEngine {
                     const char* cshader_path
         );
 
-        void run(int nbFrames, string scene_file_path);
+        void run(int nbFrames);
 
     private:
+        SceneBuilder scene_builder;
         GLuint quad_Tex;
         GLuint Display_Prog;
         GLuint Compute_Prog;

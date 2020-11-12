@@ -1,6 +1,7 @@
 #include "../headers/engine.h"
 
 RayTracingEngine::RayTracingEngine(
+				char* scene_file_path,
                 const char* window_name,
                 int width,
                 int heigth,
@@ -8,7 +9,8 @@ RayTracingEngine::RayTracingEngine(
                 const char* fshader_path,
                 const char* cshader_path
 )
-{
+{	
+	this->scene_builder = SceneBuilder (scene_file_path);
     this->window = createWindow(width, heigth, window_name);
     this->quad_Tex = createTex(width, heigth);
     this->Display_Prog = LoadVFShaders(vshader_path, fshader_path);
@@ -20,7 +22,7 @@ RayTracingEngine::RayTracingEngine(
         
 }
 
-void RayTracingEngine::run(int nbFrames, string scene_file_path) {
+void RayTracingEngine::run(int nbFrames) {
 
     GLuint uniformSeed = glGetUniformLocation(this->Compute_Prog, "seed");
 	int seed = 0;
@@ -35,9 +37,8 @@ void RayTracingEngine::run(int nbFrames, string scene_file_path) {
 		0.01f,
 		10.f
 	);
-
-	SceneBuilder sb(scene_file_path);
-	sb.sendDataToShader(this->Compute_Prog, projectionMatrix);
+	
+	this->scene_builder.sendDataToShader(this->Compute_Prog, projectionMatrix);
 
     glUseProgram(this->Compute_Prog);
 

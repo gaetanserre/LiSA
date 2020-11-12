@@ -16,9 +16,9 @@ int main(int argc, char** argv) {
 
 	int nbFrames = atoi(argv[2]);
 	
-	RayTracingEngine engine("Ray tracing engine OpengGL", WIDTH, HEIGTH, vshader_path, fshader_path, cshader_path);
+	RayTracingEngine engine(argv[1], "Ray tracing engine OpengGL", WIDTH, HEIGTH, vshader_path, fshader_path, cshader_path);
 
-	engine.run(nbFrames, argv[1]);
+	engine.run(nbFrames);
 
 	return 0;
 
