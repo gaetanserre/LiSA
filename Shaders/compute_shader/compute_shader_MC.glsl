@@ -104,9 +104,9 @@ struct Triangle {
 };
 
 Plane plane1 = {
-    vec3(0, -1.3, 0),
+    vec3(0, -0.1, 0),
     vec3(0, 1, 0),
-    buildMaterial(vec3(1, 0, 0), 1)
+    buildMaterial(vec3(0.33, 0.24, 0.18), 0)
 };
 
 Plane[] planes = {
@@ -298,7 +298,7 @@ Intersection intersectObjects(Ray ray) {
 vec3 trace(Ray ray) {
     vec3 mask = vec3(1);
     vec3 accumulator = vec3(0);
-    for(int i = 0; i<10; i++) {
+    for(int i = 0; i<30; i++) {
         Intersection intersection = intersectObjects(ray);
 
         if(!intersection.hit) {

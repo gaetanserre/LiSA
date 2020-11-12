@@ -1,0 +1,26 @@
+Material whiteglossy {
+    color = (1, 1, 1)
+    roughness = 0.3
+}
+
+Material light {
+    light = true
+    color = (1, 1, 1)
+    emit_intensity = 1
+}
+
+Sphere {
+    center = (2, 1, 2.5)
+    radius = 1
+    material = light
+}
+
+Mesh {
+    obj_file = ../objs/pawn.obj
+    material = whiteglossy
+}
+
+Camera {
+    position = (0, 1, 0.5)
+    look_at = (0, 1, 0)
+}

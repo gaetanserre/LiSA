@@ -11,6 +11,7 @@ string readFile(char* path) {
         scene_file.close();
     } else {
         cerr << path << " not found" << endl;
+        exit(-1);
     }
     return res;
 }
@@ -46,9 +47,6 @@ vector<string> SceneBuilder::matchReg(string str, regex r) {
         res.push_back(match[0]);
         searchStart = match.suffix().first;
     }
-
-    /*for(string s : res)
-        cout << s;*/
 
     return res;
 }
@@ -291,9 +289,6 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
         vertices_normals[count+2] = this->meshes_normals[i].z;
         count += 3;
     }
-
-    cout << meshes_vertices.size() << endl;
-    cout << meshes_normals.size() << endl;
 
     /***** Create TBO for meshes *****/
     GLuint tbo_vert_norm, tbo_tex_vert_norm;
