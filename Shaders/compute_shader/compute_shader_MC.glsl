@@ -298,7 +298,7 @@ Intersection intersectObjects(Ray ray) {
 vec3 trace(Ray ray) {
     vec3 mask = vec3(1);
     vec3 accumulator = vec3(0);
-    for(int i = 0; i<30; i++) {
+    for(int i = 0; i<10; i++) {
         Intersection intersection = intersectObjects(ray);
 
         if(!intersection.hit) {
@@ -353,7 +353,6 @@ void main() {
     Ray ray = {eyePos, vec3(dir)};
     vec3 n_color = trace(ray) / nb_frames;
     
-    //vec3 n_color = vec3(texelFetch(vertices_normals, NUM_VERTICES).x, texelFetch(vertices_normals, NUM_VERTICES).y, texelFetch(vertices_normals, NUM_VERTICES).z);
     vec4 o_color = imageLoad(framebuffer, pix);
     imageStore(framebuffer, pix, vec4(n_color, 1) + o_color);
 }

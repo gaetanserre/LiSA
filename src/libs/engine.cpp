@@ -35,7 +35,7 @@ void RayTracingEngine::run(int nbFrames) {
 		glm::radians(50.f),
 		float(WIDTH) / float(HEIGTH),
 		0.01f,
-		10.f
+		100.f
 	);
 	
 	this->scene_builder.sendDataToShader(this->Compute_Prog, projectionMatrix);

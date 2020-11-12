@@ -292,6 +292,9 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
         count += 3;
     }
 
+    cout << meshes_vertices.size() << endl;
+    cout << meshes_normals.size() << endl;
+
     /***** Create TBO for meshes *****/
     GLuint tbo_vert_norm, tbo_tex_vert_norm;
 
@@ -332,5 +335,7 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
 	glUniform1i(uniformIsLight, isLight);
 
     glUseProgram(0);
+
+    free(vertices_normals);
 
 }
