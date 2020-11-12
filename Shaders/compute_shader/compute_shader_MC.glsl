@@ -12,7 +12,9 @@ uniform vec4 materials[100];
 uniform int isLight;
 uniform int NUM_SPHERES;
 
-uniform samplerBuffer u_text;
+uniform samplerBuffer vertices_normals;
+uniform int NUM_VERTICES;
+
 
 layout(local_size_x = 20, local_size_y = 20) in;
 
@@ -93,6 +95,14 @@ struct Plane {
     Material material;
 };
 
+struct Triangle {
+    vec3 p1;
+    vec3 p2;
+    vec3 p3;
+    vec3 normal;
+    Material material;
+};
+
 Plane plane1 = {
     vec3(0, -1.3, 0),
     vec3(0, 1, 0),
@@ -161,6 +171,82 @@ float intersectSpheres(Ray ray, inout Intersection intersection) {
     return minDist;
 }
 
+
+Triangle transformTriangle(int idx, int idx_norm) {
+    Material m = transformMaterial(NUM_SPHERES);
+    vec3 p1 = vec3(texelFetch(vertices_normals, idx).x, texelFetch(vertices_normals, idx).y, texelFetch(vertices_normals, idx).z);
+    vec3 p2 = vec3(texelFetch(vertices_normals, idx+1).x, texelFetch(vertices_normals, idx+1).y, texelFetch(vertices_normals, idx+1).z);
+    vec3 p3 =  vec3(texelFetch(vertices_normals, idx+2).x, texelFetch(vertices_normals, idx+2).y, texelFetch(vertices_normals, idx+2).z);
+    vec3 normal = vec3(
+        texelFetch(vertices_normals, NUM_VERTICES + idx_norm).x,
+        texelFetch(vertices_normals, NUM_VERTICES + idx_norm).y,
+        texelFetch(vertices_normals, NUM_VERTICES + idx_norm).z
+    );
+
+    Triangle t = {
+        p1,
+        p2,
+        p3,
+        normal,
+        m
+    };
+    return t;
+}
+
+
+bool intersectTriangle(Ray ray, Triangle triangle, inout Intersection i) {
+    const float EPSILON = 0.0000001;
+    vec3 p1 = triangle.p1;
+    vec3 p2 = triangle.p2;
+    vec3 p3 = triangle.p3;
+    vec3 edge1, edge2, h, s, q;
+    float a,f,u,v;
+    edge1 = p2 - p1;
+    edge2 = p3 - p1;
+    h = cross(ray.dir, edge2);
+    a = dot(edge1, h);
+
+    if (a > - EPSILON && a < EPSILON) return false; //Rayon parallèle
+
+    f = 1.0/a;
+    s = ray.origin - p1;
+    u = f * (dot(s, h));
+
+    if (u < 0.0 || u > 1.0) return false;
+    q = cross(s, edge1);
+    v = f * dot(ray.dir, q);
+    if (v < 0.0 || u + v > 1.0) return false;
+
+    float t = f * dot(edge2, q);
+    if (t > EPSILON) {
+        i.hitPoint = ray.origin + t * ray.dir;
+        i.normal = triangle.normal;
+        i.t = t;
+        i.material = triangle.material;
+        i.hit = true;
+
+        return true;
+
+    } else return false;
+}
+
+float intersectTriangles(Ray ray, inout Intersection intersection) {
+    float minDist = 10e30;
+    Intersection temp = buildIntersection();
+
+    int j = 0;
+    for(int i = 0; i<NUM_VERTICES; i+=3) {
+        bool inter = intersectTriangle(ray, transformTriangle(i, j), temp);
+        if(inter && temp.t < minDist) {
+            minDist = temp.t;
+            intersection = temp;
+        }
+        temp = buildIntersection();
+        j++;
+    }
+    return minDist;
+}
+
 bool intersectPlane(Ray ray, Plane plane, inout Intersection i) {
 	float d = -dot(plane.position, plane.normal);
 	float v = dot(ray.dir, plane.normal);
@@ -192,17 +278,21 @@ float intersectPlanes(Ray ray, inout Intersection intersection) {
     return minDist;
 }
 
+
 Intersection intersectObjects(Ray ray) {
     Intersection intersection_spheres = buildIntersection();
     Intersection intersection_planes = buildIntersection();
+    Intersection intersection_meshes = buildIntersection();
 
     float dist_spheres = intersectSpheres(ray, intersection_spheres);
     float dist_planes = intersectPlanes(ray, intersection_planes);
+    float dist_meshes = intersectTriangles(ray, intersection_meshes);
 
-    if(dist_spheres < dist_planes)
-        return intersection_spheres;
-    else 
-        return intersection_planes;
+    float m = min(dist_spheres, min(dist_planes, dist_meshes));
+
+    if (m == dist_spheres) return intersection_spheres;
+    if (m == dist_planes) return intersection_planes;
+    if (m == dist_meshes) return intersection_meshes;
 }
 
 vec3 trace(Ray ray) {
@@ -261,12 +351,9 @@ void main() {
     dir = normalize(dir);
 
     Ray ray = {eyePos, vec3(dir)};
-    //vec3 n_color = trace(ray) / nb_frames;
-    float r = texelFetch(u_text, 2).r;
-    float g = texelFetch(u_text, 2).g;
-    float b = texelFetch(u_text, 2).b;
+    vec3 n_color = trace(ray) / nb_frames;
     
-    vec3 n_color = vec3(r,g,b);
+    //vec3 n_color = vec3(texelFetch(vertices_normals, NUM_VERTICES).x, texelFetch(vertices_normals, NUM_VERTICES).y, texelFetch(vertices_normals, NUM_VERTICES).z);
     vec4 o_color = imageLoad(framebuffer, pix);
     imageStore(framebuffer, pix, vec4(n_color, 1) + o_color);
 }

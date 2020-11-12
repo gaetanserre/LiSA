@@ -1,6 +1,6 @@
 #include "dependencies.h"
+#include "parse_obj.h"
 #include <regex>
-#include <vector>
 
 
 struct Camera {
@@ -17,13 +17,18 @@ class SceneBuilder {
     
     private:
         vector<glm::vec4> spheres;
+        vector<glm::vec3> meshes_vertices;
+        vector<glm::vec3> meshes_normals;
         vector<glm::vec4> materials;
         Camera camera;
 
         vector<string> materials_name;
-        vector<bool> matIsLight; 
+        vector<bool> matIsLight;
+        vector<glm::vec4> materials_temp;
+
         vector<string> matchReg(string str, regex r);
         void buildMaterials(vector<string> materials_str);
         void buildSpheres(vector<string> spheres_str);
+        void buildMeshes(vector<string> meshes_str);
         void buildCamera(vector<string> camera_str);
 };

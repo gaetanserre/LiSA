@@ -4,7 +4,7 @@ libs = ../src/libs
 
 all : ray_tracing
 
-ray_tracing : main.o opengl_utils.o engine.o scene_builder.o
+ray_tracing : main.o opengl_utils.o engine.o scene_builder.o parse_obj.o
 	$(C++) $^ -o $@ $(CFLAGS)
 
 main.o : ../src/main.cpp
@@ -18,6 +18,10 @@ engine.o : $(libs)/engine.cpp
 
 scene_builder.o : $(libs)/scene_builder.cpp
 	$(C++) $^ -c
+
+parse_obj.o : $(libs)/parse_obj.cpp
+	$(C++) $^ -c
+
 
 clean :
 	rm -rf *.o

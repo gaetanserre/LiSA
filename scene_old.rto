@@ -5,12 +5,12 @@ Material blue {
 
 Material purple {
     color = (0.4, 0.2, 0.4)
-    roughness = 0
+    roughness = 0.2
 }
 
 Material green {
     color = (0.1, 0.5, 0.4)
-    roughness = 0.8
+    roughness = .8
 }
 
 Material light{
@@ -19,20 +19,27 @@ Material light{
     emit_intensity = 1
 }
 
-Mesh {
-    obj_file = ../objs/cube.obj
+Sphere {
+    center = (-1.0, 0.2, -2.3)
+    radius = 1
+    material = purple
+}
+
+
+Sphere {
+    center = (1, -0.6, -2.3)
+    radius = 0.7
     material = green
 }
 
 Sphere {
-    
-    center = (0.3,0,0)
-    radius = 0.2
-    material = purple
+    center = (0.5, 0, 2)
+    radius = 0.5
+    material = blue
 }
 
 Sphere {
-    center = (1, 1, 2.5)
+    center = (1.75, 1, 0.5)
     radius = 1
     material = light
 }
@@ -40,6 +47,6 @@ Sphere {
 
 
 Camera {
-    position = (3.5, 0, 0.50)
-    look_at = (3.5, 0, 0)
+    position = (0, 0, .5)
+    look_at = (0, 0, 0)
 }

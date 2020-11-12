@@ -3,12 +3,14 @@
 string readFile(char* path) {
     string res = "";
     string line;
-    ifstream myfile (path);
-    if (myfile.is_open()) {
-        while(getline(myfile, line)) {
+    ifstream scene_file (path);
+    if (scene_file.is_open()) {
+        while(getline(scene_file, line)) {
             res += line + "\n";
         }
-        myfile.close();
+        scene_file.close();
+    } else {
+        cerr << path << " not found" << endl;
     }
     return res;
 }
@@ -20,6 +22,7 @@ SceneBuilder::SceneBuilder() {
 SceneBuilder::SceneBuilder(char* path) {
     regex Material_reg("Material\\s+[a-z0-9]+\\s*\\{\n*[^\\}]*");
     regex Sphere_reg ("Sphere\\s*\\{\n*[^\\}]*");
+    regex Meshes_reg ("Mesh\\s*\\{\n*[^\\}]*");
     regex Camera_reg ("Camera\\s*\\{\n*[^\\}]*");
 
 
@@ -27,6 +30,7 @@ SceneBuilder::SceneBuilder(char* path) {
 
     buildMaterials(matchReg(file, Material_reg));
     buildSpheres(matchReg(file, Sphere_reg));
+    buildMeshes(matchReg(file, Meshes_reg));
     buildCamera(matchReg(file, Camera_reg));
 }
 
@@ -99,7 +103,7 @@ void SceneBuilder::buildMaterials(vector<string> materials_str) {
         else
             throwErrorMat();
         
-        this->materials.push_back(mat);
+        this->materials_temp.push_back(mat);
 
     }
 }
@@ -123,10 +127,10 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
         regex mat_name_rgx ("material\\s*=\\s*([a-z0-9]+)");
         if(regex_search(s.begin(), s.end(), match, mat_name_rgx)) {
             bool found = false;
-            for (int i = 0; i<this->materials_name.size(); i++) {
-                if (match[1] == this->materials_name[i]) {
-                    materials_n.push_back(this->materials[i]);
-                    matIsLight_n.push_back(this->matIsLight[i]);
+            for (int j = 0; j<this->materials_name.size(); j++) {
+                if (match[1] == this->materials_name[j]) {
+                    materials_n.push_back(this->materials_temp[j]);
+                    matIsLight_n.push_back(this->matIsLight[j]);
                     found = true;
                     break;
                 }
@@ -159,6 +163,48 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
     this->materials = materials_n;
     this->matIsLight = matIsLight_n;
 
+}
+
+void throwErrorMeshes() {
+    cerr << "Error in meshes declaration" << endl;
+    exit(-1);
+}
+
+void SceneBuilder::buildMeshes(vector<string> meshes_str) {
+    vector<glm::vec4> materials_n;
+    for (int i = 0; i<meshes_str.size(); i++) {
+        const string s = meshes_str[i];
+        smatch match;
+
+        regex mat_name_rgx ("material\\s*=\\s*([a-z0-9]+)");
+        if(regex_search(s.begin(), s.end(), match, mat_name_rgx)) {
+            bool found = false;
+            for (int j = 0; j<this->materials_name.size(); j++) {
+                if (match[1] == this->materials_name[j]) {
+                    materials_n.push_back(this->materials_temp[j]);
+                    found = true;
+                    break;
+                }
+            }
+            if (not found) throwErrorMeshes();
+        }
+
+        /******* Search obj file *******/
+        regex obj_file_rgx ("obj_file\\s*=\\s*(.+\\.obj)");
+        if (regex_search(s.begin(), s.end(), match, obj_file_rgx)) {
+            vector<glm::vec3> vertices;
+            vector<glm::vec3> normals;
+            string path = match[1];
+            parse_obj_file(path, vertices, normals);
+            this->meshes_vertices.insert(meshes_vertices.end(), vertices.begin(), vertices.end());
+            this->meshes_normals.insert(meshes_normals.end(), normals.begin(), normals.end());
+
+
+        } else throwErrorMeshes();
+        
+    }
+
+    this->materials.insert(materials.end(), materials_n.begin(), materials_n.end());
 }
 
 void throwErrorCamera() {
@@ -212,8 +258,7 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
 
     glm::mat4 PVMatrix = glm::inverse(projection_matrix * viewMatrix);
 
-
-
+    /***** Transform spheres and materials *****/
     glm::vec4 *spheres_a = &this->spheres[0];
     glm::vec4 *materials_a = &this->materials[0];
     int nb_spheres = this->spheres.size();
@@ -226,18 +271,42 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
         }
     }
 
-    float colors [] = {
-        1, 0, 1,
-        0, 1, 1,
-        0, 0.5, 0.7
-    };
 
-    GLuint tbo, tbo_tex;
-    glGenBuffers(1, &tbo);
-    glBindBuffer(GL_TEXTURE_BUFFER, tbo);
-    glBufferData(GL_TEXTURE_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
-    glGenTextures(1, &tbo_tex);
-    glBindBuffer(GL_TEXTURE_BUFFER, 0);
+    /***** Transform meshes *****/
+    float *vertices_normals = (float*) malloc(
+        (this->meshes_vertices.size() + this->meshes_normals.size()) * 3 * sizeof(float))
+    ;
+
+    int count = 0;
+    for (int i = 0; i<this->meshes_vertices.size(); i++) {
+        vertices_normals[count] = this->meshes_vertices[i].x;
+        vertices_normals[count+1] = this->meshes_vertices[i].y;
+        vertices_normals[count+2] = this->meshes_vertices[i].z;
+        count += 3;
+    }
+
+    for (int i = 0; i<this->meshes_normals.size(); i++) {
+        vertices_normals[count] = this->meshes_normals[i].x;
+        vertices_normals[count+1] = this->meshes_normals[i].y;
+        vertices_normals[count+2] = this->meshes_normals[i].z;
+        count += 3;
+    }
+
+    /***** Create TBO for meshes *****/
+    GLuint tbo_vert_norm, tbo_tex_vert_norm;
+
+    /***** Vertices & normals *****/  
+    glGenBuffers(1, &tbo_vert_norm);
+    glBindBuffer(GL_TEXTURE_BUFFER, tbo_vert_norm);
+    glBufferData(GL_TEXTURE_BUFFER,
+    (this->meshes_vertices.size() + this->meshes_normals.size()) * 3 * sizeof(float),
+    vertices_normals, GL_STATIC_DRAW);
+
+    glGenTextures(1, &tbo_tex_vert_norm);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_BUFFER, tbo_tex_vert_norm);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo_vert_norm);
+
 
 	GLuint uniformEyePos = glGetUniformLocation(ComputeShaderProgram, "eyePos");
     GLuint uniformPV = glGetUniformLocation(ComputeShaderProgram, "PVMatrix");
@@ -245,22 +314,21 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
 	GLuint uniformMaterials = glGetUniformLocation(ComputeShaderProgram, "materials");
 	GLuint uniformIsLight = glGetUniformLocation(ComputeShaderProgram, "isLight");
     GLuint u_NUM_SPHERES = glGetUniformLocation(ComputeShaderProgram, "NUM_SPHERES");
+    GLuint u_NUM_VERTICES = glGetUniformLocation(ComputeShaderProgram, "NUM_VERTICES");
 
     glUseProgram(ComputeShaderProgram);
 
-    //glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_BUFFER, tbo_tex);
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo);
-    GLuint u_tex = glGetUniformLocation(ComputeShaderProgram, "u_text");
-    glUniform1i(u_tex, 0);
+    GLuint u_vertices_normals = glGetUniformLocation(ComputeShaderProgram, "vertices_normals");
+    glUniform1i(u_vertices_normals, 0);
+
 
     glUniformMatrix4fv(uniformPV, 1, GL_FALSE, glm::value_ptr(PVMatrix));
 	glUniform3fv(uniformEyePos, 1, glm::value_ptr(eye_pos));
 
-    glUseProgram(ComputeShaderProgram);
     glUniform1i(u_NUM_SPHERES, nb_spheres);
+    glUniform1i(u_NUM_VERTICES, this->meshes_vertices.size());
     glUniform4fv(uniformSpheres, nb_spheres, glm::value_ptr(spheres_a[0]));
-	glUniform4fv(uniformMaterials, nb_spheres, glm::value_ptr(materials_a[0]));
+	glUniform4fv(uniformMaterials, this->materials.size(), glm::value_ptr(materials_a[0]));
 	glUniform1i(uniformIsLight, isLight);
 
     glUseProgram(0);
