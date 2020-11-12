@@ -12,6 +12,8 @@ uniform vec4 materials[100];
 uniform int isLight;
 uniform int NUM_SPHERES;
 
+uniform samplerBuffer u_text;
+
 layout(local_size_x = 20, local_size_y = 20) in;
 
 layout(rgba32f, binding = 0) uniform image2D framebuffer;
@@ -259,7 +261,12 @@ void main() {
     dir = normalize(dir);
 
     Ray ray = {eyePos, vec3(dir)};
-    vec3 n_color = trace(ray) / nb_frames;
+    //vec3 n_color = trace(ray) / nb_frames;
+    float r = texelFetch(u_text, 2).r;
+    float g = texelFetch(u_text, 2).g;
+    float b = texelFetch(u_text, 2).b;
+    
+    vec3 n_color = vec3(r,g,b);
     vec4 o_color = imageLoad(framebuffer, pix);
     imageStore(framebuffer, pix, vec4(n_color, 1) + o_color);
 }

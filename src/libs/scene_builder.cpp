@@ -226,6 +226,19 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
         }
     }
 
+    float colors [] = {
+        1, 0, 1,
+        0, 1, 1,
+        0, 0.5, 0.7
+    };
+
+    GLuint tbo, tbo_tex;
+    glGenBuffers(1, &tbo);
+    glBindBuffer(GL_TEXTURE_BUFFER, tbo);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+    glGenTextures(1, &tbo_tex);
+    glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
 	GLuint uniformEyePos = glGetUniformLocation(ComputeShaderProgram, "eyePos");
     GLuint uniformPV = glGetUniformLocation(ComputeShaderProgram, "PVMatrix");
     GLuint uniformSpheres = glGetUniformLocation(ComputeShaderProgram, "spheres");
@@ -234,6 +247,12 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
     GLuint u_NUM_SPHERES = glGetUniformLocation(ComputeShaderProgram, "NUM_SPHERES");
 
     glUseProgram(ComputeShaderProgram);
+
+    //glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_BUFFER, tbo_tex);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo);
+    GLuint u_tex = glGetUniformLocation(ComputeShaderProgram, "u_text");
+    glUniform1i(u_tex, 0);
 
     glUniformMatrix4fv(uniformPV, 1, GL_FALSE, glm::value_ptr(PVMatrix));
 	glUniform3fv(uniformEyePos, 1, glm::value_ptr(eye_pos));
