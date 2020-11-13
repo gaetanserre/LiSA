@@ -106,7 +106,7 @@ struct Triangle {
 Plane plane1 = {
     vec3(0, -0.1, 0),
     vec3(0, 1, 0),
-    buildMaterial(vec3(0.33, 0.24, 0.18), 0)
+    buildMaterial(vec3(0.33, 0.24, 0.18), 0.07)
 };
 
 Plane[] planes = {

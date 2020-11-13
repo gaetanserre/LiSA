@@ -65,11 +65,12 @@ void parse_obj_file(string obj_file_path, vector<glm::vec3> &vertices, vector<gl
                 vertices.push_back(vertices_t[stoi(idx[0]) - 1]);
             }
         }
+
+        cout << "Done : " << vertices.size() << " vertices" << endl;
+        obj_file.close();
         
     } else {
             cerr << obj_file_path << " not found." << endl;
             exit(-1);
-        }
-
-    cout << "Done : " << vertices.size() << " vertices" << endl;
+    }
 }

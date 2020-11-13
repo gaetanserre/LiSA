@@ -1,6 +1,6 @@
 Material whiteglossy {
     color = (1, 1, 1)
-    roughness = 0.3
+    roughness = 1
 }
 
 Material light {
@@ -21,6 +21,6 @@ Mesh {
 }
 
 Camera {
-    position = (0, 1, 0.5)
-    look_at = (0, 1, 0)
+    position = (0, 10, 5.5)
+    look_at = (0, 10, 0)
 }

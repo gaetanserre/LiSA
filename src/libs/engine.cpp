@@ -22,7 +22,7 @@ RayTracingEngine::RayTracingEngine(
         
 }
 
-void RayTracingEngine::run(int nbFrames) {
+void RayTracingEngine::run(int nbFrames, char* output_path) {
 
     GLuint uniformSeed = glGetUniformLocation(this->Compute_Prog, "seed");
 	int seed = 0;
@@ -89,7 +89,12 @@ void RayTracingEngine::run(int nbFrames) {
 			glUseProgram(0);
 		}
 		else if (!print) {
-			printf("Done\n");
+			if (output_path != NULL) {
+				exportImage(this->WIDTH, this->HEIGTH, output_path);
+				printf("Rendering & exporting finished.\n");
+			} else {
+				printf("Rendering finished.\n");
+			}
 			print = true;
 		}
 	}

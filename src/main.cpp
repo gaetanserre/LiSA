@@ -18,7 +18,8 @@ int main(int argc, char** argv) {
 	
 	RayTracingEngine engine(argv[1], "Ray tracing engine OpengGL", WIDTH, HEIGTH, vshader_path, fshader_path, cshader_path);
 
-	engine.run(nbFrames);
+	if (argc == 4) engine.run(nbFrames, argv[3]);
+	else engine.run(nbFrames, NULL);
 
 	return 0;
 
