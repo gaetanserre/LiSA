@@ -3,9 +3,9 @@
 
 int main(int argc, char** argv) {
 
-	const char *fshader_path = "/home/gaetan/Documents/Projets/Ray-Tracing-OpenGL/Shaders/vf_shaders/fragment_shader.glsl";
-	const char *vshader_path = "/home/gaetan/Documents/Projets/Ray-Tracing-OpenGL/Shaders/vf_shaders/vertex_shader.glsl";
-	const char *cshader_path = "/home/gaetan/Documents/Projets/Ray-Tracing-OpenGL/Shaders/compute_shader/compute_shader_MC.glsl";
+	const char *fshader_path = "/home/gaetan/Documents/Projets/Ray-Tracing-OpenGL/shaders/vf_shaders/fragment_shader.glsl";
+	const char *vshader_path = "/home/gaetan/Documents/Projets/Ray-Tracing-OpenGL/shaders/vf_shaders/vertex_shader.glsl";
+	const char *cshader_path = "/home/gaetan/Documents/Projets/Ray-Tracing-OpenGL/shaders/compute_shader/compute_shader_MC.glsl";
 
 	if (argc < 3) {
 		printf("Not Enough arguments.\nUsage : ./ray_tracing scene_file nbFrames\n");

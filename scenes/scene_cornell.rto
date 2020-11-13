@@ -1,16 +1,16 @@
 Material white {
     color = (1, 1, 1)
-    roughness = 1
+    roughness = 0.3
 }
 
 Material red {
     color = (1,0,0)
-    roughness = 1
+    roughness = 0.3
 }
 
 Material green {
     color = (0,1,0)
-    roughness = 1
+    roughness = 0.3
 }
 
 Material blue {
