@@ -238,17 +238,18 @@ bool intersectTriangle(Ray ray, Triangle triangle, inout Intersection i) {
         i.hitPoint = ray.origin + t * ray.dir;
 
         /***** Barycentric coordinates *****/
-        vec3 N = cross(edge1, edge2);
-        float denom = dot(N,N);
-        vec3 C = cross(edge1, i.hitPoint - triangle.p2);
-        float u = dot(N, C);
-        C = cross(edge2, i.hitPoint - triangle.p3);
-        float v = dot(N, C);
+        vec3 v0 = edge1; vec3 v1 = edge2; vec3 v2 = i.hitPoint - triangle.p1;
+        float d00 = dot(v0, v0);
+        float d01 = dot(v0, v1);
+        float d11 = dot(v1,v1);
+        float d20 = dot(v2,v0);
+        float d21 = dot(v2,v1);
+        float denom = d00 * d11 - d01 * d01;
+	
+	float u = (d11 * d20 - d01 * d21) / denom;
+	float v = (d00 * d21 - d01 * d20) / denom; 
 
-        u /= denom;
-        v /= denom;
-
-        vec3 normalHit = u*triangle.n2 + v * triangle.n3 + (1 - u - v)*triangle.n1;
+        vec3 normalHit = (1 - u - v) * triangle.n3 + v * triangle.n2 + u*triangle.n1;
 
         i.normal = normalHit;
         i.t = t;
