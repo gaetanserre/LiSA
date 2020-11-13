@@ -7,8 +7,6 @@ class RayTracingEngine {
         RayTracingEngine(
                     char* scene_file_path,
                     const char* window_name,
-                    int width,
-                    int heigth,
                     const char* vshader_path,
                     const char* fshader_path,
                     const char* cshader_path

@@ -20,7 +20,7 @@ SceneBuilder::SceneBuilder() {
 }
 
 
-SceneBuilder::SceneBuilder(char* path) {
+SceneBuilder::SceneBuilder(char* path, int* WIDTH, int* HEIGTH) {
     regex Material_reg("Material\\s+[a-z0-9]+\\s*\\{\n*[^\\}]*");
     regex Sphere_reg ("Sphere\\s*\\{\n*[^\\}]*");
     regex Meshes_reg ("Mesh\\s*\\{\n*[^\\}]*");
@@ -29,10 +29,32 @@ SceneBuilder::SceneBuilder(char* path) {
 
     string file = readFile(path);
 
+    searchDim(file, WIDTH, HEIGTH);
     buildMaterials(matchReg(file, Material_reg));
     buildSpheres(matchReg(file, Sphere_reg));
     buildMeshes(matchReg(file, Meshes_reg));
     buildCamera(matchReg(file, Camera_reg));
+
+}
+
+void throwErrorDim() {
+    cerr << "Error in output dimension declaration." << endl;
+    exit(-1);
+}
+void SceneBuilder::searchDim(string str, int* WIDTH, int* HEIGTH) {
+    smatch match;
+    const string s = str;
+    regex width_rgx ("output_width\\s*=\\s*([0-9]+)");
+    if(regex_search(s.begin(), s.end(), match, width_rgx))
+        *WIDTH = stoi(match[1]);
+    else 
+        throwErrorDim();
+
+    regex heigth_rgx ("output_heigth\\s*=\\s*([0-9]+)");
+    if(regex_search(s.begin(), s.end(), match, heigth_rgx))
+        *HEIGTH = stoi(match[1]);
+    else 
+        throwErrorDim();
 }
 
 
@@ -174,19 +196,6 @@ void SceneBuilder::buildMeshes(vector<string> meshes_str) {
         const string s = meshes_str[i];
         smatch match;
 
-        regex mat_name_rgx ("material\\s*=\\s*([a-z0-9]+)");
-        if(regex_search(s.begin(), s.end(), match, mat_name_rgx)) {
-            bool found = false;
-            for (int j = 0; j<this->materials_name.size(); j++) {
-                if (match[1] == this->materials_name[j]) {
-                    materials_n.push_back(this->materials_temp[j]);
-                    found = true;
-                    break;
-                }
-            }
-            if (not found) throwErrorMeshes();
-        }
-
         /******* Search obj file *******/
         regex obj_file_rgx ("obj_file\\s*=\\s*(.+\\.obj)");
         if (regex_search(s.begin(), s.end(), match, obj_file_rgx)) {
@@ -199,9 +208,23 @@ void SceneBuilder::buildMeshes(vector<string> meshes_str) {
 
 
         } else throwErrorMeshes();
+
+        /******* Search material *******/
+        regex mat_name_rgx ("material\\s*=\\s*([a-z0-9]+)");
+        if(regex_search(s.begin(), s.end(), match, mat_name_rgx)) {
+            bool found = false;
+            for (int j = 0; j<this->materials_name.size(); j++) {
+                if (match[1] == this->materials_name[j]) {
+                    materials_n.push_back(this->materials_temp[j]);
+                    this->materials_idx.push_back(this->meshes_vertices.size());
+                    found = true;
+                    break;
+                }
+            }
+            if (not found) throwErrorMeshes();
+        }
         
     }
-
     this->materials.insert(materials.end(), materials_n.begin(), materials_n.end());
 }
 
@@ -259,6 +282,7 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
     /***** Transform spheres and materials *****/
     glm::vec4 *spheres_a = &this->spheres[0];
     glm::vec4 *materials_a = &this->materials[0];
+    int *materials_idx = &this->materials_idx[0];
     int nb_spheres = this->spheres.size();
 
     int isLight = -1;
@@ -310,6 +334,7 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
     GLuint uniformPV = glGetUniformLocation(ComputeShaderProgram, "PVMatrix");
     GLuint uniformSpheres = glGetUniformLocation(ComputeShaderProgram, "spheres");
 	GLuint uniformMaterials = glGetUniformLocation(ComputeShaderProgram, "materials");
+    GLuint uniformMaterialsIdx = glGetUniformLocation(ComputeShaderProgram, "materials_idx");
 	GLuint uniformIsLight = glGetUniformLocation(ComputeShaderProgram, "isLight");
     GLuint u_NUM_SPHERES = glGetUniformLocation(ComputeShaderProgram, "NUM_SPHERES");
     GLuint u_NUM_VERTICES = glGetUniformLocation(ComputeShaderProgram, "NUM_VERTICES");
@@ -327,6 +352,7 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
     glUniform1i(u_NUM_VERTICES, this->meshes_vertices.size());
     glUniform4fv(uniformSpheres, nb_spheres, glm::value_ptr(spheres_a[0]));
 	glUniform4fv(uniformMaterials, this->materials.size(), glm::value_ptr(materials_a[0]));
+    glUniform1iv(uniformMaterialsIdx, this->materials_idx.size(), materials_idx);
 	glUniform1i(uniformIsLight, isLight);
 
     glUseProgram(0);

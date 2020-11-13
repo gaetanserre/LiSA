@@ -3,22 +3,17 @@
 RayTracingEngine::RayTracingEngine(
 				char* scene_file_path,
                 const char* window_name,
-                int width,
-                int heigth,
                 const char* vshader_path,
                 const char* fshader_path,
                 const char* cshader_path
 )
 {	
-	this->scene_builder = SceneBuilder (scene_file_path);
-    this->window = createWindow(width, heigth, window_name);
-    this->quad_Tex = createTex(width, heigth);
+	this->scene_builder = SceneBuilder (scene_file_path, &this->WIDTH, &this->HEIGTH);
+    this->window = createWindow(this->WIDTH, this->HEIGTH, window_name);
+    this->quad_Tex = createTex(this->WIDTH, this->HEIGTH);
     this->Display_Prog = LoadVFShaders(vshader_path, fshader_path);
     this->Compute_Prog = LoadComputeShader(cshader_path);
     this->quad_VAO = getQuadVao();
-
-    this->WIDTH = width;
-    this->HEIGTH = heigth;
         
 }
 

@@ -9,6 +9,7 @@ uniform int nb_frames;
 
 uniform vec4 spheres[100];
 uniform vec4 materials[100];
+uniform int materials_idx[100];
 uniform int isLight;
 uniform int NUM_SPHERES;
 
@@ -175,7 +176,15 @@ float intersectSpheres(Ray ray, inout Intersection intersection) {
 
 
 Triangle transformTriangle(int idx) {
-    Material m = transformMaterial(NUM_SPHERES);
+    Material m;
+    for (int i = 0; i<100; i++) {
+        if (idx < materials_idx[i]) {
+            m = transformMaterial(NUM_SPHERES + i);
+            break;
+        }
+    }
+
+
     vec3 p1 = vec3(texelFetch(vertices_normals, idx).x, texelFetch(vertices_normals, idx).y, texelFetch(vertices_normals, idx).z);
     vec3 p2 = vec3(texelFetch(vertices_normals, idx+1).x, texelFetch(vertices_normals, idx+1).y, texelFetch(vertices_normals, idx+1).z);
     vec3 p3 =  vec3(texelFetch(vertices_normals, idx+2).x, texelFetch(vertices_normals, idx+2).y, texelFetch(vertices_normals, idx+2).z);

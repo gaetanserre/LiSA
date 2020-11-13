@@ -42,3 +42,7 @@ Camera {
     position = (3.5, 0, 0.50)
     look_at = (3.5, 0, 0)
 }
+
+
+output_width = 1280
+output_heigth = 720
