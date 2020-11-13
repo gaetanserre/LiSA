@@ -99,7 +99,9 @@ struct Triangle {
     vec3 p1;
     vec3 p2;
     vec3 p3;
-    vec3 normal;
+    vec3 n1;
+    vec3 n2;
+    vec3 n3;
     Material material;
 };
 
@@ -172,22 +174,34 @@ float intersectSpheres(Ray ray, inout Intersection intersection) {
 }
 
 
-Triangle transformTriangle(int idx, int idx_norm) {
+Triangle transformTriangle(int idx) {
     Material m = transformMaterial(NUM_SPHERES);
     vec3 p1 = vec3(texelFetch(vertices_normals, idx).x, texelFetch(vertices_normals, idx).y, texelFetch(vertices_normals, idx).z);
     vec3 p2 = vec3(texelFetch(vertices_normals, idx+1).x, texelFetch(vertices_normals, idx+1).y, texelFetch(vertices_normals, idx+1).z);
     vec3 p3 =  vec3(texelFetch(vertices_normals, idx+2).x, texelFetch(vertices_normals, idx+2).y, texelFetch(vertices_normals, idx+2).z);
-    vec3 normal = vec3(
-        texelFetch(vertices_normals, NUM_VERTICES + idx_norm).x,
-        texelFetch(vertices_normals, NUM_VERTICES + idx_norm).y,
-        texelFetch(vertices_normals, NUM_VERTICES + idx_norm).z
+    vec3 n1 = vec3(
+        texelFetch(vertices_normals, NUM_VERTICES + idx).x,
+        texelFetch(vertices_normals, NUM_VERTICES + idx).y,
+        texelFetch(vertices_normals, NUM_VERTICES + idx).z
+    );
+    vec3 n2 = vec3(
+        texelFetch(vertices_normals, NUM_VERTICES + idx+1).x,
+        texelFetch(vertices_normals, NUM_VERTICES + idx+1).y,
+        texelFetch(vertices_normals, NUM_VERTICES + idx+1).z
+    );
+    vec3 n3 = vec3(
+        texelFetch(vertices_normals, NUM_VERTICES + idx+2).x,
+        texelFetch(vertices_normals, NUM_VERTICES + idx+2).y,
+        texelFetch(vertices_normals, NUM_VERTICES + idx+2).z
     );
 
     Triangle t = {
         p1,
         p2,
         p3,
-        normal,
+        n1,
+        n2,
+        n3,
         m
     };
     return t;
@@ -219,8 +233,24 @@ bool intersectTriangle(Ray ray, Triangle triangle, inout Intersection i) {
 
     float t = f * dot(edge2, q);
     if (t > EPSILON) {
+
+
         i.hitPoint = ray.origin + t * ray.dir;
-        i.normal = triangle.normal;
+
+        /***** Barycentric coordinates *****/
+        vec3 N = cross(edge1, edge2);
+        float denom = dot(N,N);
+        vec3 C = cross(edge1, i.hitPoint - triangle.p2);
+        float u = dot(N, C);
+        C = cross(edge2, i.hitPoint - triangle.p3);
+        float v = dot(N, C);
+
+        u /= denom;
+        v /= denom;
+
+        vec3 normalHit = u*triangle.n2 + v * triangle.n3 + (1 - u - v)*triangle.n1;
+
+        i.normal = normalHit;
         i.t = t;
         i.material = triangle.material;
         i.hit = true;
@@ -234,15 +264,13 @@ float intersectTriangles(Ray ray, inout Intersection intersection) {
     float minDist = 10e30;
     Intersection temp = buildIntersection();
 
-    int j = 0;
     for(int i = 0; i<NUM_VERTICES; i+=3) {
-        bool inter = intersectTriangle(ray, transformTriangle(i, j), temp);
+        bool inter = intersectTriangle(ray, transformTriangle(i), temp);
         if(inter && temp.t < minDist) {
             minDist = temp.t;
             intersection = temp;
         }
         temp = buildIntersection();
-        j++;
     }
     return minDist;
 }

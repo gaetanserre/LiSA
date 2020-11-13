@@ -3,6 +3,11 @@ Material whiteglossy {
     roughness = 1
 }
 
+Material mirror {
+    color = (0.5, 0.5, 0.5)
+    roughness = 0
+}
+
 Material light {
     light = true
     color = (1, 1, 1)
@@ -13,6 +18,12 @@ Sphere {
     center = (2, 1, 2.5)
     radius = 1
     material = light
+}
+
+Sphere {
+    center = (0.3, 0.1, -0.2)
+    radius = 0.15
+    material = mirror
 }
 
 Mesh {

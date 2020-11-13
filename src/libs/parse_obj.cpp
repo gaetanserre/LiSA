@@ -60,13 +60,16 @@ void parse_obj_file(string obj_file_path, vector<glm::vec3> &vertices, vector<gl
 
                 split(line_splitted[2], idx, '/');
                 vertices.push_back(vertices_t[stoi(idx[0]) - 1]);
+                normals.push_back(normals_t[stoi(idx[2]) - 1]);
 
                 split(line_splitted[3], idx, '/');
                 vertices.push_back(vertices_t[stoi(idx[0]) - 1]);
+                normals.push_back(normals_t[stoi(idx[2]) - 1]);
             }
         }
 
         cout << "Done : " << vertices.size() << " vertices" << endl;
+
         obj_file.close();
         
     } else {
