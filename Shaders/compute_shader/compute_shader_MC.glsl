@@ -118,7 +118,7 @@ Plane[] planes = {
 
 const vec3 ambient_color = vec3(1, 1, 1);
 const float ambient_intensity = 0.05;
-const int NUM_PLANES = 1;
+const int NUM_PLANES = 0;
 
 Material transformMaterial(int idx) {
     if (isLight == idx)

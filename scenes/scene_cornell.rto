@@ -1,10 +1,25 @@
-Material whiteglossy {
+Material white {
     color = (1, 1, 1)
     roughness = 1
 }
 
+Material red {
+    color = (1,0,0)
+    roughness = 1
+}
+
+Material green {
+    color = (0,1,0)
+    roughness = 1
+}
+
+Material blue {
+    color = (0,0,1)
+    roughness = 1
+}
+
 Material mirror {
-    color = (0.5, 0.5, 0.5)
+    color = (1, 1, 1)
     roughness = 0
 }
 
@@ -14,20 +29,48 @@ Material light {
     emit_intensity = 1
 }
 
+
+Mesh {
+    obj_file = ../objs/cornell box/bot.obj
+    material = white
+}
+
+Mesh {
+    obj_file = ../objs/cornell box/up.obj
+    material = white
+}
+
+Mesh {
+    obj_file = ../objs/cornell box/back.obj
+    material = white
+}
+
+Mesh {
+    obj_file = ../objs/cornell box/right.obj
+    material = green
+}
+
+Mesh {
+    obj_file = ../objs/cornell box/left.obj
+    material = red
+}
+
 Sphere {
-    center = (2, 1, 2.5)
-    radius = 1
+    center = (0, 0.28, 0)
+    radius = 0.03
     material = light
 }
 
-Mesh {
-    obj_file = ../objs/pawn.obj
-    material = whiteglossy
+
+Sphere {
+    center = (0.05, -0.03, 0)
+    radius = 0.07
+    material = blue
 }
 
-
-Mesh {
-    obj_file = ../objs/helmet.obj
+Sphere {
+    center = (-0.05, 0.07, 0.0)
+    radius = 0.05
     material = mirror
 }
 
@@ -35,7 +78,7 @@ Mesh {
 
 
 Camera {
-    position = (0, 10, 5.5)
+    position = (0, 10, 0.5)
     look_at = (0, 10, 0)
 }
 
