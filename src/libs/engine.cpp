@@ -55,7 +55,6 @@ void RayTracingEngine::run(int nbFrames, char* output_path) {
 		glUseProgram(0);
 		
 		seed ++;
-		printf ("%d / %d\n", seed, nbFrames);
 	}
 
 

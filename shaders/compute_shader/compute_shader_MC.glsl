@@ -329,7 +329,7 @@ Intersection intersectObjects(Ray ray) {
 vec3 trace(Ray ray) {
     vec3 mask = vec3(1);
     vec3 accumulator = vec3(0);
-    for(int i = 0; i<1; i++) {
+    for(int i = 0; i<10; i++) {
         Intersection intersection = intersectObjects(ray);
 
         if(!intersection.hit) {

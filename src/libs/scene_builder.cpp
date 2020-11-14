@@ -282,7 +282,11 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
     /***** Transform spheres and materials *****/
     glm::vec4 *spheres_a = &this->spheres[0];
     glm::vec4 *materials_a = &this->materials[0];
-    int *materials_idx = &this->materials_idx[0];
+
+    int *materials_idx = NULL;
+    if (this->materials_idx.size() > 0)
+        materials_idx = &this->materials_idx[0];
+        
     int nb_spheres = this->spheres.size();
 
     int isLight = -1;
@@ -320,10 +324,6 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
 
     /***** Create SSBO for meshes *****/
     GLuint ssbo_vert_norm;
-
-
-    float color[] = {1.f, 1.f, 1.f,
-                     1.f, 0.f, 1.f};
 
     glGenBuffers(1, &ssbo_vert_norm);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_vert_norm);

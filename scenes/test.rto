@@ -10,7 +10,7 @@ Material light{
 }
 
 Mesh {
-    obj_file = ../objs/dragon.obj
+    obj_file = ../objs/spaceship.obj
     material = grey
 }
 
