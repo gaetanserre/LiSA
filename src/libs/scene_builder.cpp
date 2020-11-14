@@ -267,7 +267,7 @@ void SceneBuilder::buildCamera(vector<string> camera_str) {
 }
 
 
-GLuint SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix) {
+void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix) {
 
 	glm::vec3 eye_pos = glm::vec3(0, 0, 0.5);
 	glm::mat4 viewMatrix = glm::lookAt(
@@ -356,7 +356,5 @@ GLuint SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 pro
     glUseProgram(0);
 
     free(vertices_normals);
-
-    return ssbo_vert_norm;
 
 }

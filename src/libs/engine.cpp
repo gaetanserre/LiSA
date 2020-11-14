@@ -33,7 +33,7 @@ void RayTracingEngine::run(int nbFrames, char* output_path) {
 		100.f
 	);
 	
-	GLuint buffer = this->scene_builder.sendDataToShader(this->Compute_Prog, projectionMatrix);
+	this->scene_builder.sendDataToShader(this->Compute_Prog, projectionMatrix);
 
     glUseProgram(this->Compute_Prog);
 	
