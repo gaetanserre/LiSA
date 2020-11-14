@@ -1,4 +1,4 @@
 #include "dependencies.h"
 
 
-void exportImage(int WIDTH, int HEIGTH, char* output_path);
+void exportImage(int WIDTH, int HEIGTH, GLuint texture, char* output_path);

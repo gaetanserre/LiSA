@@ -13,7 +13,6 @@ uniform int materials_idx[100];
 uniform int isLight;
 uniform int NUM_SPHERES;
 
-//uniform samplerBuffer vertices_normals;
 uniform int NUM_VERTICES;
 
 layout(std430, binding = 0) buffer List
@@ -189,29 +188,9 @@ Triangle transformTriangle(int idx) {
         }
     }
 
-
-    /*vec3 p1 = vec3(texelFetch(vertices_normals, idx).x, texelFetch(vertices_normals, idx).y, texelFetch(vertices_normals, idx).z);
-    vec3 p2 = vec3(texelFetch(vertices_normals, idx+1).x, texelFetch(vertices_normals, idx+1).y, texelFetch(vertices_normals, idx+1).z);
-    vec3 p3 =  vec3(texelFetch(vertices_normals, idx+2).x, texelFetch(vertices_normals, idx+2).y, texelFetch(vertices_normals, idx+2).z);*/
     vec3 p1 = vertices_normals[idx];
     vec3 p2 = vertices_normals[idx + 1];
     vec3 p3 = vertices_normals[idx + 2];
-
-    /*vec3 n1 = vec3(
-        texelFetch(vertices_normals, NUM_VERTICES + idx).x,
-        texelFetch(vertices_normals, NUM_VERTICES + idx).y,
-        texelFetch(vertices_normals, NUM_VERTICES + idx).z
-    );
-    vec3 n2 = vec3(
-        texelFetch(vertices_normals, NUM_VERTICES + idx+1).x,
-        texelFetch(vertices_normals, NUM_VERTICES + idx+1).y,
-        texelFetch(vertices_normals, NUM_VERTICES + idx+1).z
-    );
-    vec3 n3 = vec3(
-        texelFetch(vertices_normals, NUM_VERTICES + idx+2).x,
-        texelFetch(vertices_normals, NUM_VERTICES + idx+2).y,
-        texelFetch(vertices_normals, NUM_VERTICES + idx+2).z
-    );*/
 
     vec3 n1 = vertices_normals[ NUM_VERTICES + idx];
     vec3 n2 = vertices_normals[ NUM_VERTICES + idx + 1];
@@ -269,8 +248,8 @@ bool intersectTriangle(Ray ray, Triangle triangle, inout Intersection i) {
         float d21 = dot(v2,v1);
         float denom = d00 * d11 - d01 * d01;
 	
-	float u = (d11 * d20 - d01 * d21) / denom;
-	float v = (d00 * d21 - d01 * d20) / denom; 
+	    float u = (d11 * d20 - d01 * d21) / denom;
+	    float v = (d00 * d21 - d01 * d20) / denom; 
 
         vec3 normalHit = (1 - u - v) * triangle.n3 + v * triangle.n2 + u*triangle.n1;
 
@@ -350,7 +329,7 @@ Intersection intersectObjects(Ray ray) {
 vec3 trace(Ray ray) {
     vec3 mask = vec3(1);
     vec3 accumulator = vec3(0);
-    for(int i = 0; i<10; i++) {
+    for(int i = 0; i<1; i++) {
         Intersection intersection = intersectObjects(ray);
 
         if(!intersection.hit) {
@@ -404,7 +383,6 @@ void main() {
 
     Ray ray = {eyePos, vec3(dir)};
     vec3 n_color = trace(ray) / nb_frames;
-    //vec3 n_color = vertices_normals[0];
     vec4 o_color = imageLoad(framebuffer, pix);
     imageStore(framebuffer, pix, vec4(n_color, 1) + o_color);
 }
