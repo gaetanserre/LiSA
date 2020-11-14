@@ -33,16 +33,15 @@ void RayTracingEngine::run(int nbFrames, char* output_path) {
 		100.f
 	);
 	
-	this->scene_builder.sendDataToShader(this->Compute_Prog, projectionMatrix);
+	GLuint buffer = this->scene_builder.sendDataToShader(this->Compute_Prog, projectionMatrix);
 
     glUseProgram(this->Compute_Prog);
-
-	glUniform1i(uniformSeed, seed);
+	
 	glUniform1i(uniformNbFrames, NbFrames);
 
 	glBindTexture(GL_TEXTURE_2D, this->quad_Tex);
 	glBindImageTexture(0, this->quad_Tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-	glDispatchCompute(this->WIDTH / 20, this->HEIGTH / 20, 1);
+	glDispatchCompute(this->WIDTH / 10, this->HEIGTH / 10, 1);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -71,6 +70,7 @@ void RayTracingEngine::run(int nbFrames, char* output_path) {
 		seed += 1;
 		if (seed < NbFrames) {
 			glUseProgram(this->Compute_Prog);
+			//glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, buffer, 0, sizeof(glm::vec3));
 
 			glUniform1i(uniformSeed, seed);
 			glUniform1i(uniformNbFrames, NbFrames);

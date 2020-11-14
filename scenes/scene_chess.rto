@@ -31,6 +31,7 @@ Mesh {
     material = whiteglossy
 }
 
+
 Camera {
     position = (0, 10, 5.5)
     look_at = (0, 10, 0)

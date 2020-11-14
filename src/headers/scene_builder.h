@@ -13,7 +13,7 @@ class SceneBuilder {
     public:
         SceneBuilder();
         SceneBuilder(char* path, int* WIDTH, int* HEIGTH);
-        void sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix);
+        GLuint sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix);
     
     private:
         vector<glm::vec4> spheres;

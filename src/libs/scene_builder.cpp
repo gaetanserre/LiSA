@@ -267,7 +267,7 @@ void SceneBuilder::buildCamera(vector<string> camera_str) {
 }
 
 
-void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix) {
+GLuint SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix) {
 
 	glm::vec3 eye_pos = glm::vec3(0, 0, 0.5);
 	glm::mat4 viewMatrix = glm::lookAt(
@@ -296,39 +296,40 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
 
     /***** Transform meshes *****/
     float *vertices_normals = (float*) malloc(
-        (this->meshes_vertices.size() + this->meshes_normals.size()) * 3 * sizeof(float))
+        (this->meshes_vertices.size() + this->meshes_normals.size()) * 4 * sizeof(float))
     ;
+    float dummy = -1;
 
     int count = 0;
     for (int i = 0; i<this->meshes_vertices.size(); i++) {
         vertices_normals[count] = this->meshes_vertices[i].x;
         vertices_normals[count+1] = this->meshes_vertices[i].y;
         vertices_normals[count+2] = this->meshes_vertices[i].z;
-        count += 3;
+        vertices_normals[count+3] = dummy;
+        count += 4;
     }
 
     for (int i = 0; i<this->meshes_normals.size(); i++) {
         vertices_normals[count] = this->meshes_normals[i].x;
         vertices_normals[count+1] = this->meshes_normals[i].y;
         vertices_normals[count+2] = this->meshes_normals[i].z;
-        count += 3;
+        vertices_normals[count+3] = dummy;
+        count += 4;
     }
 
-    /***** Create TBO for meshes *****/
-    GLuint tbo_vert_norm, tbo_tex_vert_norm;
 
-    /***** Vertices & normals *****/  
-    glGenBuffers(1, &tbo_vert_norm);
-    glBindBuffer(GL_TEXTURE_BUFFER, tbo_vert_norm);
-    glBufferData(GL_TEXTURE_BUFFER,
-    (this->meshes_vertices.size() + this->meshes_normals.size()) * 3 * sizeof(float),
-    vertices_normals, GL_STATIC_DRAW);
+    /***** Create SSBO for meshes *****/
+    GLuint ssbo_vert_norm;
 
-    glGenTextures(1, &tbo_tex_vert_norm);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_BUFFER, tbo_tex_vert_norm);
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo_vert_norm);
 
+    float color[] = {1.f, 1.f, 1.f,
+                     1.f, 0.f, 1.f};
+
+    glGenBuffers(1, &ssbo_vert_norm);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_vert_norm);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,
+    count * sizeof(float),
+    vertices_normals, GL_DYNAMIC_COPY);
 
 	GLuint uniformEyePos = glGetUniformLocation(ComputeShaderProgram, "eyePos");
     GLuint uniformPV = glGetUniformLocation(ComputeShaderProgram, "PVMatrix");
@@ -341,10 +342,7 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
 
     glUseProgram(ComputeShaderProgram);
 
-    GLuint u_vertices_normals = glGetUniformLocation(ComputeShaderProgram, "vertices_normals");
-    glUniform1i(u_vertices_normals, 0);
-
-
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo_vert_norm);
     glUniformMatrix4fv(uniformPV, 1, GL_FALSE, glm::value_ptr(PVMatrix));
 	glUniform3fv(uniformEyePos, 1, glm::value_ptr(eye_pos));
 
@@ -358,5 +356,7 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
     glUseProgram(0);
 
     free(vertices_normals);
+
+    return ssbo_vert_norm;
 
 }
