@@ -101,6 +101,7 @@ model from https://benedikt-bitterli.me/resources/
 - Optimize the computation time.
 - Improve the rendering technique.
 - Add transparency and refraction.
+- Add support for texture.
 
 ## Credits
 - GLSL Path tracer (https://github.com/knightcrawler25/GLSL-PathTracer). An amazing renderer. I took a modfied version of the scene and a random() function in GLSL from here.
