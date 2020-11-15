@@ -77,8 +77,9 @@ Sphere {
 
 
 Camera {
-    position = (0, 10, 0.5)
-    look_at = (0, 10, 0)
+    position = (0, 0.05, 0.6)
+    look_at = (0, 0.05, 0)
+    fov = 40
 }
 
 output_width = 1000

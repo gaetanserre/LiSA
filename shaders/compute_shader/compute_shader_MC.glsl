@@ -353,11 +353,15 @@ vec3 trace(Ray ray) {
                     float d = clamp(dot(intersection.normal, shadow_ray.dir), 0.0, 1.0);
                     accumulator += d * temp.material.emit_intensity * temp.material.color * mask;
                 }
+
+                vec3 randomRay = Rand3Normal();
+                if (dot(intersection.normal, randomRay) < 0)
+                    randomRay *= -1;
                 
                 vec3 nray = normalize(
                 mix(
                     reflect(ray.dir, intersection.normal),
-                    intersection.normal + Rand3Normal(),
+                    randomRay,
                     intersection.material.roughness
                     )
                 );

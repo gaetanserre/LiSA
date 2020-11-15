@@ -240,6 +240,7 @@ void SceneBuilder::buildCamera(vector<string> camera_str) {
     const string s = camera_str[0];
     glm::vec3 pos;
     glm::vec3 look_at;
+    float fov;
 
     smatch match;
 
@@ -257,9 +258,17 @@ void SceneBuilder::buildCamera(vector<string> camera_str) {
     else
         throwErrorCamera();
 
+    regex fov_rgx = searchFloat("fov");
+    if(regex_search(s.begin(), s.end(), match, fov_rgx))
+        fov = stof(match[1]);
+    else
+        throwErrorCamera();
+
+
     Camera c = {
         pos,
-        look_at
+        look_at,
+        fov
     };
 
     this->camera = c;
@@ -267,13 +276,20 @@ void SceneBuilder::buildCamera(vector<string> camera_str) {
 }
 
 
-void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix) {
+void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, int width, int heigth) {
 
-	glm::vec3 eye_pos = glm::vec3(0, 0, 0.5);
 	glm::mat4 viewMatrix = glm::lookAt(
 		this->camera.pos,
 		this->camera.look_at,
 		glm::vec3(0, 1, 0)
+	);
+
+    glm::mat4 projection_matrix = glm::perspectiveFov(
+		glm::radians(this->camera.fov),
+		float(width),
+		float(heigth),
+		0.01f,
+		100.f
 	);
 
 
@@ -343,7 +359,7 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo_vert_norm);
     glUniformMatrix4fv(uniformPV, 1, GL_FALSE, glm::value_ptr(PVMatrix));
-	glUniform3fv(uniformEyePos, 1, glm::value_ptr(eye_pos));
+	glUniform3fv(uniformEyePos, 1, glm::value_ptr(this->camera.pos));
 
     glUniform1i(u_NUM_SPHERES, nb_spheres);
     glUniform1i(u_NUM_VERTICES, this->meshes_vertices.size());

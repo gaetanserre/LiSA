@@ -68,8 +68,9 @@ Mesh {
 
 
 Camera {
-    position = (0, 10, 5.5)
-    look_at = (0, 10, 0)
+    position = (0, 0.5, 0.5)
+    look_at = (0, 0, 0)
+    fov = 40
 }
 
 output_width = 1280
@@ -84,7 +85,7 @@ There are some limitations to LiSA, mostly cause of my lack of knowledge:
 
 
 ## Sample images
-````assets/chess_pawn.rto```` 1000 passes 3 samples
+````assets/chess_pawn.rto```` 200 passes 3 samples
 ![](results_images/chess/result.png)
 
 ````assets/cornell_box.rto```` 1000 passes 3 samples

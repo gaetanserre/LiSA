@@ -6,6 +6,7 @@
 struct Camera {
         glm::vec3 pos;
         glm::vec3 look_at;
+        float fov;
 };
 
 class SceneBuilder {
@@ -13,7 +14,7 @@ class SceneBuilder {
     public:
         SceneBuilder();
         SceneBuilder(char* path, int* WIDTH, int* HEIGTH);
-        void sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 projection_matrix);
+        void sendDataToShader(GLuint ComputeShaderProgram, int width, int heigth);
     
     private:
         vector<glm::vec4> spheres;
