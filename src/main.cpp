@@ -1,5 +1,4 @@
 #include "headers/engine.h"
-#include <stdio.h>
 
 int main(int argc, char** argv) {
 
