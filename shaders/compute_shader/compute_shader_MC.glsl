@@ -3,7 +3,7 @@
 uniform mat4 PVMatrix;
 uniform vec3 eyePos;
 
-uniform float seed;
+uniform vec2 randomVector;
 uniform int nb_frames;
 uniform int nb_sample;
 
@@ -26,10 +26,10 @@ layout(local_size_x = 10, local_size_y = 10) in;
 
 layout(rgba32f, binding = 0) uniform image2D framebuffer;
 
-vec2 RandomState = gl_GlobalInvocationID.xy + vec2(seed);
+vec2 seed = gl_GlobalInvocationID.xy;
 float random(){
-    float r = fract(sin(dot(RandomState.xy, vec2(12.9898,78.233))) * 43758.5453);
-    RandomState += vec2(r);
+    seed -= randomVector;
+    float r = fract(sin(dot(seed, vec2(12.9898,78.233))) * 43758.5453);
     return r;
 }
 

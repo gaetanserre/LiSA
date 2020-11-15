@@ -346,27 +346,18 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, int width, int 
     count * sizeof(float),
     vertices_normals, GL_DYNAMIC_COPY);
 
-	GLuint uniformEyePos = glGetUniformLocation(ComputeShaderProgram, "eyePos");
-    GLuint uniformPV = glGetUniformLocation(ComputeShaderProgram, "PVMatrix");
-    GLuint uniformSpheres = glGetUniformLocation(ComputeShaderProgram, "spheres");
-	GLuint uniformMaterials = glGetUniformLocation(ComputeShaderProgram, "materials");
-    GLuint uniformMaterialsIdx = glGetUniformLocation(ComputeShaderProgram, "materials_idx");
-	GLuint uniformIsLight = glGetUniformLocation(ComputeShaderProgram, "isLight");
-    GLuint u_NUM_SPHERES = glGetUniformLocation(ComputeShaderProgram, "NUM_SPHERES");
-    GLuint u_NUM_VERTICES = glGetUniformLocation(ComputeShaderProgram, "NUM_VERTICES");
-
     glUseProgram(ComputeShaderProgram);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo_vert_norm);
-    glUniformMatrix4fv(uniformPV, 1, GL_FALSE, glm::value_ptr(PVMatrix));
-	glUniform3fv(uniformEyePos, 1, glm::value_ptr(this->camera.pos));
+    glUniformMatrix4fv(glGetUniformLocation(ComputeShaderProgram, "PVMatrix"), 1, GL_FALSE, glm::value_ptr(PVMatrix));
+	glUniform3fv(glGetUniformLocation(ComputeShaderProgram, "eyePos"), 1, glm::value_ptr(this->camera.pos));
 
-    glUniform1i(u_NUM_SPHERES, nb_spheres);
-    glUniform1i(u_NUM_VERTICES, this->meshes_vertices.size());
-    glUniform4fv(uniformSpheres, nb_spheres, glm::value_ptr(spheres_a[0]));
-	glUniform4fv(uniformMaterials, this->materials.size(), glm::value_ptr(materials_a[0]));
-    glUniform1iv(uniformMaterialsIdx, this->materials_idx.size(), materials_idx);
-	glUniform1i(uniformIsLight, isLight);
+    glUniform1i(glGetUniformLocation(ComputeShaderProgram, "NUM_SPHERES"), nb_spheres);
+    glUniform1i(glGetUniformLocation(ComputeShaderProgram, "NUM_VERTICES"), this->meshes_vertices.size());
+    glUniform4fv(glGetUniformLocation(ComputeShaderProgram, "spheres"), nb_spheres, glm::value_ptr(spheres_a[0]));
+	glUniform4fv(glGetUniformLocation(ComputeShaderProgram, "materials"), this->materials.size(), glm::value_ptr(materials_a[0]));
+    glUniform1iv(glGetUniformLocation(ComputeShaderProgram, "materials_idx"), this->materials_idx.size(), materials_idx);
+	glUniform1i(glGetUniformLocation(ComputeShaderProgram, "isLight"), isLight);
 
     glUseProgram(0);
 

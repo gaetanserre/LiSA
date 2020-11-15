@@ -19,10 +19,8 @@ RayTracingEngine::RayTracingEngine(
 
 void RayTracingEngine::run(int nbFrames, char* output_path, int nb_sample) {
 
-    GLuint uniformSeed = glGetUniformLocation(this->Compute_Prog, "seed");
-	GLuint uniformNbFrames = glGetUniformLocation(this->Compute_Prog, "nb_frames");
-
-
+	float r1, r2;
+    GLuint uniformRandomVector = glGetUniformLocation(this->Compute_Prog, "randomVector");
 	
 	this->scene_builder.sendDataToShader(this->Compute_Prog, this->WIDTH, this->HEIGTH);
 
@@ -30,9 +28,11 @@ void RayTracingEngine::run(int nbFrames, char* output_path, int nb_sample) {
 
     glUseProgram(this->Compute_Prog);
 	
-	float random = ((float) rand()) / (float) RAND_MAX;
-	glUniform1f(uniformSeed, random);
-	glUniform1i(uniformNbFrames, nbFrames);
+	r1 = ((float)rand() / (RAND_MAX));
+	r2 = ((float)rand() / (RAND_MAX));
+
+	glUniform2f(uniformRandomVector, r1, r2);
+	glUniform1i(glGetUniformLocation(this->Compute_Prog, "nb_frames"), nbFrames);
 	glUniform1i(glGetUniformLocation(this->Compute_Prog, "nb_sample"), nb_sample);
 
 	glBindTexture(GL_TEXTURE_2D, this->quadTex);
@@ -48,8 +48,6 @@ void RayTracingEngine::run(int nbFrames, char* output_path, int nb_sample) {
 	int currentFrame = 0;
 
 	while (!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS) {
-
-		random = ((float) rand()) / (float) RAND_MAX;
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.97f, 0.97f, 1.f, 1.f);
@@ -68,10 +66,12 @@ void RayTracingEngine::run(int nbFrames, char* output_path, int nb_sample) {
 
 		currentFrame += 1;
 		if (currentFrame < nbFrames) {
+			r1 = ((float)rand() / (RAND_MAX));
+			r2 = ((float)rand() / (RAND_MAX));
+
 			glUseProgram(this->Compute_Prog);
 
-			glUniform1f(uniformSeed, random);
-			glUniform1i(uniformNbFrames, nbFrames);
+			glUniform2f(uniformRandomVector, r1, r2);
 
 			glBindTexture(GL_TEXTURE_2D, this->quadTex);
 			glBindImageTexture(0, this->quadTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
