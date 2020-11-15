@@ -36,7 +36,7 @@ Mesh {
 }
 
 Mesh {
-    obj_file = ../assets/objs/cornell box/up.obj
+    obj_file = ../assets/objs/cornell box/top.obj
     material = white
 }
 
@@ -69,7 +69,7 @@ Sphere {
 }
 
 Sphere {
-    center = (-0.06, 0.02, 0)
+    center = (-0.07, 0.05, 0)
     radius = 0.05
     material = mirror
 }
