@@ -74,8 +74,8 @@ output_heigth = 720
 
 ## Limitations
 There are some limitations to LiSA, mostly cause of my lack of knowledge:
-- Only a Sphere object can emit light
-- Only one light per scene
+- Only a Sphere object can emit light.
+- Only one light per scene.
 - LiSA is slow and can crash the GPU driver if the number of vertices exceed 3M.
 
 
@@ -93,9 +93,9 @@ model from https://benedikt-bitterli.me/resources/
 
 
 ## TODO list
-- Optimize the computation time
-- Improve the quality of the obtained image
-- Add transparency and refraction
+- Optimize the computation time.
+- Improve the quality of the obtained image.
+- Add transparency and refraction.
 
 ## Credits
 - GLSL Path tracer (https://github.com/knightcrawler25/GLSL-PathTracer). An amazing renderer. I took a modfied version of the scene and a random() function in GLSL from here.
