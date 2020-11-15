@@ -81,7 +81,7 @@ output_heigth = 720
 There are some limitations to LiSA, mostly cause of my lack of knowledge:
 - Only a Sphere object can emit light.
 - Only one light per scene.
-- LiSA is slow and can crash the GPU driver if the number of vertices exceed 3M.
+- LiSA is slow and can crash the GPU driver if the number of vertices exceed a big value (2.5M for a RTX 2080).
 
 
 ## Sample images
