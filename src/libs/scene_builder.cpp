@@ -282,7 +282,6 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, glm::mat4 proje
     /***** Transform spheres and materials *****/
     glm::vec4 *spheres_a = &this->spheres[0];
     glm::vec4 *materials_a = &this->materials[0];
-
     int *materials_idx = NULL;
     if (this->materials_idx.size() > 0)
         materials_idx = &this->materials_idx[0];

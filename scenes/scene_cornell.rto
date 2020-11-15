@@ -5,12 +5,12 @@ Material white {
 
 Material red {
     color = (1,0,0)
-    roughness = 0.3
+    roughness = 1
 }
 
 Material green {
     color = (0,1,0)
-    roughness = 0.3
+    roughness = 1
 }
 
 Material blue {
@@ -56,7 +56,7 @@ Mesh {
 }
 
 Sphere {
-    center = (0, 0.28, 0)
+    center = (0, 0.25, 0)
     radius = 0.03
     material = light
 }
@@ -67,13 +67,6 @@ Sphere {
     radius = 0.07
     material = blue
 }
-
-Sphere {
-    center = (-0.05, 0.07, 0.0)
-    radius = 0.05
-    material = mirror
-}
-
 
 
 

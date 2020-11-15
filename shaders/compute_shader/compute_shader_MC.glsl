@@ -3,8 +3,9 @@
 uniform mat4 PVMatrix;
 uniform vec3 eyePos;
 
-uniform int seed;
+uniform float seed;
 uniform int nb_frames;
+uniform int nb_sample;
 
 
 uniform vec4 spheres[100];
@@ -26,15 +27,14 @@ layout(local_size_x = 10, local_size_y = 10) in;
 layout(rgba32f, binding = 0) uniform image2D framebuffer;
 
 vec2 RandomState = gl_GlobalInvocationID.xy + vec2(seed);
-
 float random(){
-    float r = fract(sin(dot(RandomState.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    float r = fract(sin(dot(RandomState.xy, vec2(12.9898,78.233))) * 43758.5453);
     RandomState += vec2(r);
     return r;
 }
 
 vec3 Rand3Normal() {
-    return vec3(random(), random(), random());
+    return normalize(vec3(random(), random(), random()));
 }
 
 struct Material {
@@ -113,7 +113,7 @@ struct Triangle {
 Plane plane1 = {
     vec3(0, -0.1, 0),
     vec3(0, 1, 0),
-    buildMaterial(vec3(0.33, 0.24, 0.18), 0.07)
+    buildMaterial(vec3(0.70, 0, 0.2), 0.07)
 };
 
 Plane[] planes = {
@@ -329,7 +329,7 @@ Intersection intersectObjects(Ray ray) {
 vec3 trace(Ray ray) {
     vec3 mask = vec3(1);
     vec3 accumulator = vec3(0);
-    for(int i = 0; i<10; i++) {
+    for(int i = 0; i<nb_sample; i++) {
         Intersection intersection = intersectObjects(ray);
 
         if(!intersection.hit) {
@@ -351,7 +351,7 @@ vec3 trace(Ray ray) {
 
                 if(temp.material.emit) {
                     float d = clamp(dot(intersection.normal, shadow_ray.dir), 0.0, 1.0);
-                    //d *= pow(asin(light.radius / distance(shadow_ray.origin, light.position)), 2.0);
+                    //d *= pow(asin(spheres[isLight].w / distance(shadow_ray.origin, spheres[isLight].xyz)), 2.0);
                     accumulator += d * temp.material.emit_intensity * temp.material.color * mask;
                 }
 

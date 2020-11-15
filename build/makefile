@@ -2,9 +2,9 @@ C++ = g++
 CFLAGS = -lGLEW -lglfw -lGL
 libs = ../src/libs
 
-all : ray_tracing
+all : LiSA
 
-ray_tracing : main.o opengl_utils.o engine.o scene_builder.o parse_obj.o export_image.o
+LiSA : main.o opengl_utils.o engine.o scene_builder.o parse_obj.o export_image.o
 	$(C++) $^ -o $@ $(CFLAGS)
 
 main.o : ../src/main.cpp
@@ -27,7 +27,4 @@ export_image.o : $(libs)/export_image.cpp
 
 clean :
 	rm -rf *.o
-	rm ray_tracing
-
-run :
-	./ray_tracing ../scene.rto 500
+	rm LiSA
