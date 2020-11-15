@@ -20,7 +20,6 @@ RayTracingEngine::RayTracingEngine(
 void RayTracingEngine::run(int nbFrames, char* output_path, int nb_sample) {
 
     GLuint uniformSeed = glGetUniformLocation(this->Compute_Prog, "seed");
-
 	GLuint uniformNbFrames = glGetUniformLocation(this->Compute_Prog, "nb_frames");
 
 	glm::mat4 projectionMatrix = glm::perspective(
@@ -31,8 +30,8 @@ void RayTracingEngine::run(int nbFrames, char* output_path, int nb_sample) {
 	);
 	
 	this->scene_builder.sendDataToShader(this->Compute_Prog, projectionMatrix);
-	srand (time(NULL));
 
+	srand (time(NULL));
 
     glUseProgram(this->Compute_Prog);
 	

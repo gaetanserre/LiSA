@@ -351,10 +351,9 @@ vec3 trace(Ray ray) {
 
                 if(temp.material.emit) {
                     float d = clamp(dot(intersection.normal, shadow_ray.dir), 0.0, 1.0);
-                    //d *= pow(asin(spheres[isLight].w / distance(shadow_ray.origin, spheres[isLight].xyz)), 2.0);
                     accumulator += d * temp.material.emit_intensity * temp.material.color * mask;
                 }
-
+                
                 vec3 nray = normalize(
                 mix(
                     reflect(ray.dir, intersection.normal),

@@ -1,0 +1,72 @@
+Material white {
+    color = (1,1,1)
+    roughness = 0.3
+}
+
+Material mirror {
+    color = (1,1,1)
+    roughness = 0
+}
+
+Material black {
+    color = (0.2,0.2,0.2)
+    roughness = 1
+}
+
+Material light{
+    light = true
+    color = (1,1,1)
+    emit_intensity = 1
+}
+
+Mesh {
+    obj_file = ../assets/objs/spaceship/engines.obj
+    material = black
+}
+
+Mesh {
+    obj_file = ../assets/objs/spaceship/wings2.obj
+    material = black
+}
+
+Mesh {
+    obj_file = ../assets/objs/spaceship/back.obj
+    material = white
+}
+
+Mesh {
+    obj_file = ../assets/objs/spaceship/engines1.obj
+    material = white
+}
+
+Mesh {
+    obj_file = ../assets/objs/spaceship/wings.obj
+    material = white
+}
+
+Mesh {
+    obj_file = ../assets/objs/spaceship/spaceship.obj
+    material = white
+}
+
+Mesh {
+    obj_file = ../assets/objs/spaceship/glass.obj
+    material = white
+}
+
+
+Sphere {
+    center = (1, 1, 2.5)
+    radius = 1
+    material = light
+}
+
+
+Camera {
+    position = (3.5, 0, 0.50)
+    look_at = (3.5, 0, 0)
+}
+
+
+output_width = 600
+output_heigth = 400
