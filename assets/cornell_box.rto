@@ -31,27 +31,27 @@ Material light {
 
 
 Mesh {
-    obj_file = ../assets/objs/cornell box/bot.obj
+    obj_file = ../assets/objs/cornell_box/bot.obj
     material = white
 }
 
 Mesh {
-    obj_file = ../assets/objs/cornell box/top.obj
+    obj_file = ../assets/objs/cornell_box/top.obj
     material = white
 }
 
 Mesh {
-    obj_file = ../assets/objs/cornell box/back.obj
+    obj_file = ../assets/objs/cornell_box/back.obj
     material = white
 }
 
 Mesh {
-    obj_file = ../assets/objs/cornell box/right.obj
+    obj_file = ../assets/objs/cornell_box/right.obj
     material = green
 }
 
 Mesh {
-    obj_file = ../assets/objs/cornell box/left.obj
+    obj_file = ../assets/objs/cornell_box/left.obj
     material = red
 }
 

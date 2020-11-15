@@ -84,8 +84,8 @@ There are some limitations to LiSA, mostly cause of my lack of knowledge:
 ````assets/chess_pawn.rto```` 1000 passes 3 samples
 ![](results_images/chess/result.png)
 
-````assets/cornell.rto```` 1000 passes 3 samples
-![](results_images/cornell/result.png)
+````assets/cornell_box.rto```` 1000 passes 3 samples
+![](results_images/cornell_box/result.png)
 
 ````assets/spaceship.rto```` 50 passes 2 samples
 
