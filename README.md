@@ -1,6 +1,7 @@
 # LiSA Path Tracing Renderer
 
 LiSA is a path tracing rendering engine developped in C++ using OpenGL 4.5.
+
 LiSA runs in a GLSL compute shader and uses a simplified version of Monte-Carlo rendering technique.
 
 ## Build and usage
