@@ -94,7 +94,7 @@ model from https://benedikt-bitterli.me/resources/
 
 ## TODO list
 - Optimize the computation time.
-- Improve the quality of the obtained image.
+- Improve the rendering technique.
 - Add transparency and refraction.
 
 ## Credits
