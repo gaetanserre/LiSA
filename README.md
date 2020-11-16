@@ -27,7 +27,7 @@ TODO
 - The number of samples correponds to the number of times a ray can bounce.
 - The output file is a [ppm](https://fr.wikipedia.org/wiki/Portable_pixmap) image.
 - You have to provide a file describing the scene you want LiSA to render. You can find some examples in the folder ````assets````.
-- In the scene file you need atleast one light, one material, one camera and output dimension. See [Limitations](#Limitations) to learn more.
+- In the scene file you need one light, one camera, atleast one material and output dimension. See [Limitations](#Limitations) to learn more.
 
 ### Scene file example
 ````
