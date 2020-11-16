@@ -29,12 +29,14 @@ layout(rgba32f, binding = 0) uniform image2D framebuffer;
 vec2 seed = gl_GlobalInvocationID.xy;
 float random(){
     seed -= randomVector;
-    float r = fract(sin(dot(seed, vec2(12.9898,78.233))) * 43758.5453);
-    return r;
+    return fract(sin(dot(seed, vec2(12.9898,78.233))) * 43758.5453);
 }
 
 vec3 Rand3Normal() {
-    return normalize(vec3(random(), random(), random()));
+    float r1 = random() * 2 - 1;
+    float r2 = random() * 2 - 1;
+    float r3 = random() * 2 - 1;
+    return normalize(vec3(r1, r2, r3));
 }
 
 struct Material {
@@ -113,7 +115,7 @@ struct Triangle {
 Plane plane1 = {
     vec3(0, -0.1, 0),
     vec3(0, 1, 0),
-    buildMaterial(vec3(0.70, 0, 0.2), 0.07)
+    buildMaterial(vec3(1,1,1), 0.03)
 };
 
 Plane[] planes = {

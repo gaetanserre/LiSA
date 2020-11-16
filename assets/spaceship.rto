@@ -13,6 +13,11 @@ Material black {
     roughness = 1
 }
 
+Material red {
+    color = (1,0,0)
+    roughness = 1
+}
+
 Material light{
     light = true
     color = (1,1,1)
@@ -26,7 +31,7 @@ Mesh {
 
 Mesh {
     obj_file = ../assets/objs/spaceship/wings2.obj
-    material = black
+    material = red
 }
 
 Mesh {
