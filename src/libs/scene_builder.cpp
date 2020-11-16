@@ -37,24 +37,27 @@ SceneBuilder::SceneBuilder(char* path, int* WIDTH, int* HEIGTH) {
 
 }
 
-void throwErrorDim() {
-    cerr << "Error in output dimension declaration." << endl;
-    exit(-1);
-}
+
 void SceneBuilder::searchDim(string str, int* WIDTH, int* HEIGTH) {
+    auto throwErrorDim = [] (string error) {
+        cerr << "Error in output dimension declaration: ";
+        cerr << error << endl;
+        exit(-1);
+    };
+
     smatch match;
     const string s = str;
     regex width_rgx ("output_width\\s*=\\s*([0-9]+)");
     if(regex_search(s.begin(), s.end(), match, width_rgx))
         *WIDTH = stoi(match[1]);
     else 
-        throwErrorDim();
+        throwErrorDim("no valid width declared.");
 
     regex heigth_rgx ("output_heigth\\s*=\\s*([0-9]+)");
     if(regex_search(s.begin(), s.end(), match, heigth_rgx))
         *HEIGTH = stoi(match[1]);
     else 
-        throwErrorDim();
+        throwErrorDim("no valid heigth declared.");
 }
 
 
@@ -83,14 +86,17 @@ regex searchFloat(string begin) {
     return r;
 }
 
-void throwErrorMat() {
-    cerr << "Error in materials declaration." << endl;
-    exit(-1);
-}
 
 void SceneBuilder::buildMaterials(vector<string> materials_str) {
+
+    auto throwErrorMat = [] (string error) {
+        cerr << "Error in materials dimension declaration: ";
+        cerr << error << endl;
+        exit(-1);
+    };
+
     if (materials_str.size() < 1)
-        throwErrorMat();
+        throwErrorMat("no valid materials declared.");
 
     for (int i = 0; i<materials_str.size(); i++) {
         const string s = materials_str[i];
@@ -98,8 +104,11 @@ void SceneBuilder::buildMaterials(vector<string> materials_str) {
 
         /******* Search name *******/
         regex name_rgx ("\\s+([a-z0-9]+) *\\{");
-        if(regex_search(s.begin(), s.end(), match, name_rgx))
+        string name;
+        if(regex_search(s.begin(), s.end(), match, name_rgx)) {
             this->materials_name.push_back(match[1]);
+            name = match[1];
+        }
 
         /******* Search light *******/
         regex light_rgx ("(light\\s*=\\s*true)");
@@ -114,28 +123,30 @@ void SceneBuilder::buildMaterials(vector<string> materials_str) {
         if(regex_search(s.begin(), s.end(), match, color_rgx))
             mat = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
         else
-            throwErrorMat();
+            throwErrorMat("no valid color provided in material " + name + ".");
 
         /******* Search emit/roughness *******/
         regex alpha_rgx = searchFloat("(roughness|emit_intensity)");
         if(regex_search(s.begin(), s.end(), match, alpha_rgx))
             mat.w = stof(match[2]);
         else
-            throwErrorMat();
+            throwErrorMat("no valid roughness|emit_intensity in material " + name + ".");
         
         this->materials_temp.push_back(mat);
 
     }
 }
 
-void throwErrorSphere() {
-    cerr << "Error in spheres declaration." << endl;
-    exit(-1);
-}
 
 void SceneBuilder::buildSpheres(vector<string> spheres_str) {
+    auto throwErrorSphere = [] (string error) {
+        cerr << "Error in spheres dimension declaration: ";
+        cerr << error << endl;
+        exit(-1);
+    };
+
     if (spheres_str.size() < 1)
-        throwErrorMat();
+        throwErrorSphere("no valid sphere declared.");
 
     vector<glm::vec4> materials_n;
     vector<bool> matIsLight_n;
@@ -155,11 +166,9 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
                     break;
                 }
             }
-            if (not found) throwErrorSphere();
-        }
-
-        else
-            throwErrorSphere();
+            if (not found) throwErrorSphere((string) match[1] + " material not found.");
+        } else
+            throwErrorSphere("no material provided.");
 
         /******* Search center *******/
         glm::vec4 sphere(-1);
@@ -167,7 +176,7 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
         if(regex_search(s.begin(), s.end(), match, center_rgx))
             sphere = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
         else
-            throwErrorSphere();
+            throwErrorSphere("no valid center provided.");
         
 
         /******* Search radius *******/
@@ -175,7 +184,7 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
         if(regex_search(s.begin(), s.end(), match, radius_rgx))
             sphere.w = stof(match[1]);
         else
-            throwErrorSphere();
+            throwErrorSphere("no valid radius provided.");
 
         this->spheres.push_back(sphere);
     }
@@ -185,12 +194,14 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
 
 }
 
-void throwErrorMeshes() {
-    cerr << "Error in meshes declaration" << endl;
-    exit(-1);
-}
 
 void SceneBuilder::buildMeshes(vector<string> meshes_str) {
+    auto throwErrorMeshe = [] (string error) {
+        cerr << "Error in mesh dimension declaration: ";
+        cerr << error << endl;
+        exit(-1);
+    };
+
     vector<glm::vec4> materials_n;
     for (int i = 0; i<meshes_str.size(); i++) {
         const string s = meshes_str[i];
@@ -207,7 +218,7 @@ void SceneBuilder::buildMeshes(vector<string> meshes_str) {
             this->meshes_normals.insert(meshes_normals.end(), normals.begin(), normals.end());
 
 
-        } else throwErrorMeshes();
+        } else throwErrorMeshe("no valid obj_file provided");
 
         /******* Search material *******/
         regex mat_name_rgx ("material\\s*=\\s*([a-z0-9]+)");
@@ -221,21 +232,23 @@ void SceneBuilder::buildMeshes(vector<string> meshes_str) {
                     break;
                 }
             }
-            if (not found) throwErrorMeshes();
-        }
-        
+            if (not found) throwErrorMeshe((string) match[1] + " material not found");
+        } else throwErrorMeshe("no valid material provided");
     }
+
     this->materials.insert(materials.end(), materials_n.begin(), materials_n.end());
 }
 
-void throwErrorCamera() {
-    cerr << "Error in camera declaration." << endl;
-    exit(-1);
-}
 
 void SceneBuilder::buildCamera(vector<string> camera_str) {
+    auto throwErrorCamera = [] (string error) {
+        cerr << "Error in camera dimension declaration: ";
+        cerr << error << endl;
+        exit(-1);
+    };
+
     if (camera_str.size() != 1)
-        throwErrorCamera();
+        throwErrorCamera("no valid camera declared.");
     
     const string s = camera_str[0];
     glm::vec3 pos;
@@ -249,20 +262,20 @@ void SceneBuilder::buildCamera(vector<string> camera_str) {
     if(regex_search(s.begin(), s.end(), match, position_rgx))
         pos = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
     else
-        throwErrorCamera();
+        throwErrorCamera("no valid position provided.");
 
     /******* Search lookAt *******/
     regex look_at_rgx = searchVector("look_at");
     if(regex_search(s.begin(), s.end(), match, look_at_rgx))
         look_at = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
     else
-        throwErrorCamera();
+        throwErrorCamera("no valid look_at provided.");
 
     regex fov_rgx = searchFloat("fov");
     if(regex_search(s.begin(), s.end(), match, fov_rgx))
         fov = stof(match[1]);
     else
-        throwErrorCamera();
+        throwErrorCamera("no valid fov provided.");
 
 
     Camera c = {
