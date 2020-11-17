@@ -7,17 +7,13 @@ LiSA runs in a GLSL compute shader and uses a simple Monte-Carlo rendering techn
 ## Build and usage
 
 ### Linux
-You need GLFW and GLEW to compile this project.
+You need GLFW3 and GLEW to compile this project.
 ````bash
-sudo apt-get install libglfw3-dev
-sudo apt-get install libglew-dev
 cd build
 make
 ./LiSA scene_file.rto nb_passes [output_file.ppm nb_sample=3]
 ````
 
-### macOS
-TODO
 
 ### Windows
 TODO
