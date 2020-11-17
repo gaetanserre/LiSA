@@ -90,7 +90,7 @@ regex searchFloat(string begin) {
 void SceneBuilder::buildMaterials(vector<string> materials_str) {
 
     auto throwErrorMat = [] (string error) {
-        cerr << "Error in materials dimension declaration: ";
+        cerr << "Error in materials declaration: ";
         cerr << error << endl;
         exit(-1);
     };
@@ -140,7 +140,7 @@ void SceneBuilder::buildMaterials(vector<string> materials_str) {
 
 void SceneBuilder::buildSpheres(vector<string> spheres_str) {
     auto throwErrorSphere = [] (string error) {
-        cerr << "Error in spheres dimension declaration: ";
+        cerr << "Error in spheres declaration: ";
         cerr << error << endl;
         exit(-1);
     };
@@ -197,7 +197,7 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
 
 void SceneBuilder::buildMeshes(vector<string> meshes_str) {
     auto throwErrorMeshe = [] (string error) {
-        cerr << "Error in mesh dimension declaration: ";
+        cerr << "Error in mesh declaration: ";
         cerr << error << endl;
         exit(-1);
     };
@@ -242,7 +242,7 @@ void SceneBuilder::buildMeshes(vector<string> meshes_str) {
 
 void SceneBuilder::buildCamera(vector<string> camera_str) {
     auto throwErrorCamera = [] (string error) {
-        cerr << "Error in camera dimension declaration: ";
+        cerr << "Error in camera declaration: ";
         cerr << error << endl;
         exit(-1);
     };
