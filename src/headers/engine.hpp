@@ -1,6 +1,6 @@
-#include "opengl_utils.h"
-#include "scene_builder.h"
-#include "export_image.h"
+#include "opengl_utils.hpp"
+#include "scene_builder.hpp"
+#include "export_image.hpp"
 
 class RayTracingEngine {
     public:

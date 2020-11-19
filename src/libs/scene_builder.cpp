@@ -1,4 +1,4 @@
-#include "../headers/scene_builder.h"
+#include "../headers/scene_builder.hpp"
 
 string readFile(char* path) {
     string res = "";

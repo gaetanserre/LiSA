@@ -1,4 +1,4 @@
-#include "../headers/parse_obj.h"
+#include "../headers/parse_obj.hpp"
 
 size_t split(const std::string& txt, std::vector<std::string>& strs, char ch)
 {

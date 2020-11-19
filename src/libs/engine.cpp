@@ -1,4 +1,4 @@
-#include "../headers/engine.h"
+#include "../headers/engine.hpp"
 
 RayTracingEngine::RayTracingEngine(
 				char* scene_file_path,

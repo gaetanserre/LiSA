@@ -1,5 +1,5 @@
-#include "dependencies.h"
-#include "parse_obj.h"
+#include "dependencies.hpp"
+#include "parse_obj.hpp"
 #include <regex>
 
 

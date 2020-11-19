@@ -30,31 +30,6 @@ Material light {
 }
 
 
-Mesh {
-    obj_file = ../assets/objs/cornell_box/bot.obj
-    material = white
-}
-
-Mesh {
-    obj_file = ../assets/objs/cornell_box/top.obj
-    material = white
-}
-
-Mesh {
-    obj_file = ../assets/objs/cornell_box/back.obj
-    material = white
-}
-
-Mesh {
-    obj_file = ../assets/objs/cornell_box/right.obj
-    material = green
-}
-
-Mesh {
-    obj_file = ../assets/objs/cornell_box/left.obj
-    material = red
-}
-
 Sphere {
     center = (0, 0.25, 0)
     radius = 0.03

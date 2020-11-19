@@ -1,4 +1,4 @@
-#include "../headers/export_image.h"
+#include "../headers/export_image.hpp"
 
 
 void exportImage(int WIDTH, int HEIGTH, GLuint texture, char* output_path) {

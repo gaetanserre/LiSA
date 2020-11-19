@@ -1,4 +1,4 @@
-#include "../headers/opengl_utils.h"
+#include "../headers/opengl_utils.hpp"
 
 GLuint createTex(int TEX_WIDTH, int TEX_HEIGTH) {
 	GLuint quadTextureID;
