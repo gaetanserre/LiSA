@@ -16,29 +16,7 @@ string readFile(char* path) {
     return res;
 }
 
-SceneBuilder::SceneBuilder() {
-}
-
-
-SceneBuilder::SceneBuilder(char* path, int* WIDTH, int* HEIGTH) {
-    regex Material_reg("Material\\s+[a-z0-9]+\\s*\\{\n*[^\\}]*");
-    regex Sphere_reg ("Sphere\\s*\\{\n*[^\\}]*");
-    regex Meshes_reg ("Mesh\\s*\\{\n*[^\\}]*");
-    regex Camera_reg ("Camera\\s*\\{\n*[^\\}]*");
-
-
-    string file = readFile(path);
-
-    searchDim(file, WIDTH, HEIGTH);
-    buildMaterials(matchReg(file, Material_reg));
-    buildSpheres(matchReg(file, Sphere_reg));
-    buildMeshes(matchReg(file, Meshes_reg));
-    buildCamera(matchReg(file, Camera_reg));
-
-}
-
-
-void SceneBuilder::searchDim(string str, int* WIDTH, int* HEIGTH) {
+void searchDim(string str, int* WIDTH, int* HEIGTH) {
     auto throwErrorDim = [] (string error) {
         cerr << "Error in output dimension declaration: ";
         cerr << error << endl;
@@ -61,7 +39,7 @@ void SceneBuilder::searchDim(string str, int* WIDTH, int* HEIGTH) {
 }
 
 
-vector<string> SceneBuilder::matchReg(string str, regex r) {
+vector<string> matchReg(string str, regex r) {
     vector<string> res;
     std::smatch match;
 
@@ -75,6 +53,38 @@ vector<string> SceneBuilder::matchReg(string str, regex r) {
 
     return res;
 }
+
+string removeComments(string file) {
+    const string s = file;
+    const regex comments_rgx("\\/\\*((.|\n)*?)\\*\\/");
+
+    stringstream result;
+    regex_replace(ostream_iterator<char>(result), s.begin(), s.end(), comments_rgx, "");
+
+    return result.str();
+}
+
+SceneBuilder::SceneBuilder() {
+}
+
+
+SceneBuilder::SceneBuilder(char* path, int* WIDTH, int* HEIGTH) {
+    regex Material_reg("Material\\s+"+this->mat_name+"+\\s*\\{\n*[^\\}]*");
+    regex Sphere_reg ("Sphere\\s*\\{\n*[^\\}]*");
+    regex Meshes_reg ("Mesh\\s*\\{\n*[^\\}]*");
+    regex Camera_reg ("Camera\\s*\\{\n*[^\\}]*");
+
+
+    string file = readFile(path);
+
+    file = removeComments(file);
+    searchDim(file, WIDTH, HEIGTH);
+    buildMaterials(matchReg(file, Material_reg));
+    buildSpheres(matchReg(file, Sphere_reg));
+    buildMeshes(matchReg(file, Meshes_reg));
+    buildCamera(matchReg(file, Camera_reg));
+}
+
 
 regex searchVector(string begin) {
     regex res(begin + "\\s*=\\s*\\(\\s*([+-]?([0-9]*[.])?[0-9]+)\\s*,\\s*([+-]?([0-9]*[.])?[0-9]+)\\s*,\\s*([+-]?([0-9]*[.])?[0-9]+)\\s*\\)");
@@ -103,7 +113,7 @@ void SceneBuilder::buildMaterials(vector<string> materials_str) {
         smatch match;
 
         /******* Search name *******/
-        regex name_rgx ("\\s+([a-z0-9]+) *\\{");
+        regex name_rgx ("\\s+("+this->mat_name+") *\\{");
         string name;
         if(regex_search(s.begin(), s.end(), match, name_rgx)) {
             this->materials_name.push_back(match[1]);
@@ -112,27 +122,30 @@ void SceneBuilder::buildMaterials(vector<string> materials_str) {
 
         /******* Search light *******/
         regex light_rgx ("(light\\s*=\\s*true)");
-        if(regex_search(s.begin(), s.end(), match, light_rgx))
-            matIsLight.push_back(true);
-        else 
-            matIsLight.push_back(false);
+        bool isLight = regex_search(s.begin(), s.end(), match, light_rgx);
+        //this->matIsLight.push_back(isLight);
 
         /******* Search color *******/
-        glm::vec4 mat(-1);
+        Material m;
+        glm::vec3 color;
         regex color_rgx = searchVector("color");
         if(regex_search(s.begin(), s.end(), match, color_rgx))
-            mat = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
+            color = glm::vec3(stof(match[1]), stof(match[3]), stof(match[5]));
         else
             throwErrorMat("no valid color provided in material " + name + ".");
 
         /******* Search emit/roughness *******/
         regex alpha_rgx = searchFloat("(roughness|emit_intensity)");
-        if(regex_search(s.begin(), s.end(), match, alpha_rgx))
-            mat.w = stof(match[2]);
+        if(regex_search(s.begin(), s.end(), match, alpha_rgx)) {
+            if (isLight)
+                m = buildLight(color, stof(match[2]));
+            else
+                m = buildMaterial(color, stof(match[2]));
+        }
         else
             throwErrorMat("no valid roughness|emit_intensity in material " + name + ".");
         
-        this->materials_temp.push_back(mat);
+        this->materials.push_back(m);
 
     }
 }
@@ -145,23 +158,26 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
         exit(-1);
     };
 
-    if (spheres_str.size() < 1)
-        throwErrorSphere("no valid sphere declared.");
-
     vector<glm::vec4> materials_n;
     vector<bool> matIsLight_n;
     for (int i = 0; i<spheres_str.size(); i++) {
+        Sphere sphere;
         const string s = spheres_str[i];
         smatch match;
 
         /******* Search material *******/
-        regex mat_name_rgx ("material\\s*=\\s*([a-z0-9]+)");
+        regex mat_name_rgx ("material\\s*=\\s*("+this->mat_name+")");
         if(regex_search(s.begin(), s.end(), match, mat_name_rgx)) {
             bool found = false;
             for (int j = 0; j<this->materials_name.size(); j++) {
                 if (match[1] == this->materials_name[j]) {
-                    materials_n.push_back(this->materials_temp[j]);
-                    matIsLight_n.push_back(this->matIsLight[j]);
+                    sphere.materialIdx = j;
+                    if (this->materials[j].emit) {
+                        if(this->idxLight == -1)
+                            idxLight = spheres.size();
+                        else
+                            throwErrorSphere("Only one light is allowed.");
+                    }
                     found = true;
                     break;
                 }
@@ -171,10 +187,9 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
             throwErrorSphere("no material provided.");
 
         /******* Search center *******/
-        glm::vec4 sphere(-1);
         regex center_rgx = searchVector("center");
         if(regex_search(s.begin(), s.end(), match, center_rgx))
-            sphere = glm::vec4(stof(match[1]), stof(match[3]), stof(match[5]), -1);
+            sphere.center = glm::vec3(stof(match[1]), stof(match[3]), stof(match[5]));
         else
             throwErrorSphere("no valid center provided.");
         
@@ -182,16 +197,12 @@ void SceneBuilder::buildSpheres(vector<string> spheres_str) {
         /******* Search radius *******/
         regex radius_rgx = searchFloat("radius");
         if(regex_search(s.begin(), s.end(), match, radius_rgx))
-            sphere.w = stof(match[1]);
+            sphere.radius = stof(match[1]);
         else
             throwErrorSphere("no valid radius provided.");
 
         this->spheres.push_back(sphere);
     }
-
-    this->materials = materials_n;
-    this->matIsLight = matIsLight_n;
-
 }
 
 
@@ -202,41 +213,36 @@ void SceneBuilder::buildMeshes(vector<string> meshes_str) {
         exit(-1);
     };
 
-    vector<glm::vec4> materials_n;
     for (int i = 0; i<meshes_str.size(); i++) {
         const string s = meshes_str[i];
         smatch match;
 
-        /******* Search obj file *******/
-        regex obj_file_rgx ("obj_file\\s*=\\s*(.+\\.obj)");
-        if (regex_search(s.begin(), s.end(), match, obj_file_rgx)) {
-            vector<glm::vec3> vertices;
-            vector<glm::vec3> normals;
-            string path = match[1];
-            parse_obj_file(path, vertices, normals);
-            this->meshes_vertices.insert(meshes_vertices.end(), vertices.begin(), vertices.end());
-            this->meshes_normals.insert(meshes_normals.end(), normals.begin(), normals.end());
-
-
-        } else throwErrorMeshe("no valid obj_file provided");
-
         /******* Search material *******/
-        regex mat_name_rgx ("material\\s*=\\s*([a-z0-9]+)");
+        int materialIdx;
+        regex mat_name_rgx ("material\\s*=\\s*("+this->mat_name+")");
         if(regex_search(s.begin(), s.end(), match, mat_name_rgx)) {
             bool found = false;
             for (int j = 0; j<this->materials_name.size(); j++) {
                 if (match[1] == this->materials_name[j]) {
-                    materials_n.push_back(this->materials_temp[j]);
-                    this->materials_idx.push_back(this->meshes_vertices.size());
+                    materialIdx = j;
+                    if (this->materials[j].emit && this->idxLight != -1)
+                        throwErrorMeshe("Only one light is allowed.");
                     found = true;
                     break;
                 }
             }
             if (not found) throwErrorMeshe((string) match[1] + " material not found");
         } else throwErrorMeshe("no valid material provided");
-    }
 
-    this->materials.insert(materials.end(), materials_n.begin(), materials_n.end());
+        /******* Search obj file *******/
+        regex obj_file_rgx ("obj_file\\s*=\\s*(.+\\.obj)");
+        if (regex_search(s.begin(), s.end(), match, obj_file_rgx)) {
+            string path = match[1];
+            vector<Triangle> t = parse_obj_file(path, this->meshes_vertices, this->meshes_normals, materialIdx);
+            this->triangles.insert(this->triangles.end(), t.begin(), t.end());
+
+        } else throwErrorMeshe("no valid obj_file provided");
+    }
 }
 
 
@@ -254,6 +260,7 @@ void SceneBuilder::buildCamera(vector<string> camera_str) {
     glm::vec3 pos;
     glm::vec3 look_at;
     float fov;
+    glm::vec2 focal_plane(0,0);
 
     smatch match;
 
@@ -271,17 +278,25 @@ void SceneBuilder::buildCamera(vector<string> camera_str) {
     else
         throwErrorCamera("no valid look_at provided.");
 
+    /******* Search FOV *******/
     regex fov_rgx = searchFloat("fov");
     if(regex_search(s.begin(), s.end(), match, fov_rgx))
         fov = stof(match[1]);
     else
         throwErrorCamera("no valid fov provided.");
 
+    /******* Search focal_plane *******/
+    regex focal_rgx = searchFloat("focal_plane");
+    if(regex_search(s.begin(), s.end(), match, focal_rgx)) {
+        focal_plane.x = stof(match[1]);
+        focal_plane.y = 1;
+    }
 
     Camera c = {
         pos,
         look_at,
-        fov
+        fov,
+        focal_plane
     };
 
     this->camera = c;
@@ -289,7 +304,7 @@ void SceneBuilder::buildCamera(vector<string> camera_str) {
 }
 
 
-void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, int width, int heigth) {
+void SceneBuilder::sendDataToCuda(CudaEngine *cudaEngine, int width, int heigth) {
 
 	glm::mat4 viewMatrix = glm::lookAt(
 		this->camera.pos,
@@ -309,71 +324,12 @@ void SceneBuilder::sendDataToShader(GLuint ComputeShaderProgram, int width, int 
     glm::mat4 PVMatrix = glm::inverse(projection_matrix * viewMatrix);
 
     /***** Transform spheres and materials *****/
-    glm::vec4 *spheres_a = &this->spheres[0];
-    glm::vec4 *materials_a = &this->materials[0];
-    int *materials_idx = NULL;
-    if (this->materials_idx.size() > 0)
-        materials_idx = &this->materials_idx[0];
-        
-    int nb_spheres = this->spheres.size();
 
-    int isLight = -1;
-    for (int i = 0 ; i<matIsLight.size(); i++) {
-        if (matIsLight[i]){
-            isLight = i;
-            break;
-        }
-    }
-
-
-    /***** Transform meshes *****/
-    float *vertices_normals = (float*) malloc(
-        (this->meshes_vertices.size() + this->meshes_normals.size()) * 4 * sizeof(float))
-    ;
-    float dummy = -1;
-
-    int count = 0;
-    for (int i = 0; i<this->meshes_vertices.size(); i++) {
-        vertices_normals[count] = this->meshes_vertices[i].x;
-        vertices_normals[count+1] = this->meshes_vertices[i].y;
-        vertices_normals[count+2] = this->meshes_vertices[i].z;
-        vertices_normals[count+3] = dummy;
-        count += 4;
-    }
-
-    for (int i = 0; i<this->meshes_normals.size(); i++) {
-        vertices_normals[count] = this->meshes_normals[i].x;
-        vertices_normals[count+1] = this->meshes_normals[i].y;
-        vertices_normals[count+2] = this->meshes_normals[i].z;
-        vertices_normals[count+3] = dummy;
-        count += 4;
-    }
-
-
-    /***** Create SSBO for meshes *****/
-    GLuint ssbo_vert_norm;
-
-    glGenBuffers(1, &ssbo_vert_norm);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_vert_norm);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,
-    count * sizeof(float),
-    vertices_normals, GL_DYNAMIC_COPY);
-
-    glUseProgram(ComputeShaderProgram);
-
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo_vert_norm);
-    glUniformMatrix4fv(glGetUniformLocation(ComputeShaderProgram, "PVMatrix"), 1, GL_FALSE, glm::value_ptr(PVMatrix));
-	glUniform3fv(glGetUniformLocation(ComputeShaderProgram, "eyePos"), 1, glm::value_ptr(this->camera.pos));
-
-    glUniform1i(glGetUniformLocation(ComputeShaderProgram, "NUM_SPHERES"), nb_spheres);
-    glUniform1i(glGetUniformLocation(ComputeShaderProgram, "NUM_VERTICES"), this->meshes_vertices.size());
-    glUniform4fv(glGetUniformLocation(ComputeShaderProgram, "spheres"), nb_spheres, glm::value_ptr(spheres_a[0]));
-	glUniform4fv(glGetUniformLocation(ComputeShaderProgram, "materials"), this->materials.size(), glm::value_ptr(materials_a[0]));
-    glUniform1iv(glGetUniformLocation(ComputeShaderProgram, "materials_idx"), this->materials_idx.size(), materials_idx);
-	glUniform1i(glGetUniformLocation(ComputeShaderProgram, "isLight"), isLight);
-
-    glUseProgram(0);
-
-    free(vertices_normals);
+    (*cudaEngine).init(this->materials, this->spheres,
+                       this->triangles,
+                       this->meshes_vertices,
+                       this->meshes_normals,
+                       this->idxLight, PVMatrix,
+                       this->camera.pos, this->camera.focal_plane);
 
 }

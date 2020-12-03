@@ -1,5 +1,6 @@
 #include "dependencies.hpp"
 #include "parse_obj.hpp"
+#include "cuda/cudaEngine.hpp"
 #include <regex>
 
 
@@ -7,6 +8,7 @@ struct Camera {
         glm::vec3 pos;
         glm::vec3 look_at;
         float fov;
+        glm::vec2 focal_plane; //focal_plane.x is the focal plane, if focal_plane.y = 0, focal plane is not used
 };
 
 class SceneBuilder {
@@ -14,22 +16,21 @@ class SceneBuilder {
     public:
         SceneBuilder();
         SceneBuilder(char* path, int* WIDTH, int* HEIGTH);
-        void sendDataToShader(GLuint ComputeShaderProgram, int width, int heigth);
+        void sendDataToCuda(CudaEngine *cudaKernel, int width, int heigth);
     
     private:
-        vector<glm::vec4> spheres;
+        string mat_name = "([a-zA-Z0-9]|_)+";
+
+        vector<Sphere> spheres;
+        vector<Triangle> triangles;
         vector<glm::vec3> meshes_vertices;
         vector<glm::vec3> meshes_normals;
-        vector<glm::vec4> materials;
-        vector<int> materials_idx;
+        vector<Material> materials;
+        int idxLight = -1;
         Camera camera;
 
         vector<string> materials_name;
-        vector<bool> matIsLight;
-        vector<glm::vec4> materials_temp;
-
-        vector<string> matchReg(string str, regex r);
-        void searchDim(string str, int* WIDTH, int* HEIGTH);
+        
         void buildMaterials(vector<string> materials_str);
         void buildSpheres(vector<string> spheres_str);
         void buildMeshes(vector<string> meshes_str);

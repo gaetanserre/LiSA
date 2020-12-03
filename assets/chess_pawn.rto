@@ -1,6 +1,11 @@
-Material whiteglossy {
+Material white {
     color = (1, 1, 1)
     roughness = 1
+}
+
+Material redglossy {
+    color = (0.8, 0, 0.2)
+    roughness = 0.07
 }
 
 Material mirror {
@@ -27,8 +32,13 @@ Sphere {
 }
 
 Mesh {
-    obj_file = ../assets/objs/pawn.obj
-    material = whiteglossy
+    obj_file = ../assets/objs/chess_pawn/pawn.obj
+    material = white
+}
+
+Mesh {
+    obj_file = ../assets/objs/chess_pawn/ground.obj
+    material = redglossy
 }
 
 

@@ -1,9 +1,9 @@
-Material white {
+Material rough_white {
     color = (1, 1, 1)
     roughness = 1
 }
 
-Material red {
+Material Red {
     color = (1,0,0)
     roughness = 0.7
 }
@@ -13,47 +13,63 @@ Material green {
     roughness = 1
 }
 
-Material blue {
-    color = (0,0,1)
-    roughness = 1
-}
-
-Material mirror {
-    color = (1, 1, 1)
-    roughness = 0
-}
-
 Material light {
     light = true
-    color = (1, 1, 1)
+    color = (1,1,1)
     emit_intensity = 1
 }
 
 
-Sphere {
-    center = (0, 0.25, 0)
-    radius = 0.03
+Mesh {
+    obj_file = ../assets/objs/cornell_box/bot.obj
+    material = rough_white
+}
+
+Mesh {
+    obj_file = ../assets/objs/cornell_box/top.obj
+    material = rough_white
+}
+
+Mesh {
+    obj_file = ../assets/objs/cornell_box/back.obj
+    material = rough_white
+}
+
+Mesh {
+    obj_file = ../assets/objs/cornell_box/right.obj
+    material = green
+}
+
+Mesh {
+    obj_file = ../assets/objs/cornell_box/left.obj
+    material = Red
+}
+
+Mesh {
+    obj_file = ../assets/objs/cornell_box/large_box.obj
+    material = rough_white
+}
+
+Mesh {
+    obj_file = ../assets/objs/cornell_box/small_box.obj
+    material = rough_white
+}
+
+Mesh {
+    obj_file = ../assets/objs/cornell_box/light.obj
     material = light
 }
 
 
-Sphere {
-    center = (0.05, -0.03, 0)
-    radius = 0.07
-    material = blue
-}
-
-Sphere {
-    center = (-0.07, 0.05, 0)
-    radius = 0.05
-    material = mirror
-}
-
-
+/*Sphere {
+    center = (0, 0.25, -0.05)
+    radius = 0.03
+    material = light
+}*/
 
 Camera {
-    position = (0, 0.05, 0.6)
-    look_at = (0, 0.05, 0)
+    position = (-0.01, 0.015, 0.60)
+    look_at = (-0.01, 0.015, 0)
     fov = 40
 }
 

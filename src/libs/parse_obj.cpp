@@ -20,10 +20,17 @@ size_t split(const std::string& txt, std::vector<std::string>& strs, char ch)
     return strs.size();
 }
 
-void parse_obj_file(string obj_file_path, vector<glm::vec3> &vertices, vector<glm::vec3> &normals) {
+vector<Triangle> parse_obj_file(string obj_file_path,
+                                vector<glm::vec3> &vertices,
+                                vector<glm::vec3> &normals,
+                                int materialIdx)
+{
     cout << "Importing " << obj_file_path << endl;
-	vector<glm::vec3> vertices_t;
-    vector<glm::vec3> normals_t;
+    
+    int oldV_size = vertices.size();
+    int oldN_size = normals.size();
+
+    vector<Triangle> triangles;
 
 	ifstream obj_file(obj_file_path);
     if (obj_file.is_open()) {
@@ -34,7 +41,7 @@ void parse_obj_file(string obj_file_path, vector<glm::vec3> &vertices, vector<gl
             split(line, line_splitted, ' ');
             
             if (line_splitted[0] == "v") {
-                vertices_t.push_back(
+                vertices.push_back(
                     glm::vec3(
                         stof(line_splitted[1]),
                         stof(line_splitted[2]),
@@ -43,7 +50,7 @@ void parse_obj_file(string obj_file_path, vector<glm::vec3> &vertices, vector<gl
                 );
             }
             else if (line_splitted[0] == "vn") {
-                normals_t.push_back(
+                normals.push_back(
                     glm::vec3(
                         stof(line_splitted[1]),
                         stof(line_splitted[2]),
@@ -55,22 +62,35 @@ void parse_obj_file(string obj_file_path, vector<glm::vec3> &vertices, vector<gl
                 vector<string> idx;
 
                 split(line_splitted[1], idx, '/');
-                vertices.push_back(vertices_t[stoi(idx[0]) - 1]);
-                normals.push_back(normals_t[stoi(idx[2]) - 1]);
+                int p1Idx = stoi(idx[0]) + oldV_size - 1;
+                int n1Idx = stoi(idx[2]) + oldN_size - 1;
 
                 split(line_splitted[2], idx, '/');
-                vertices.push_back(vertices_t[stoi(idx[0]) - 1]);
-                normals.push_back(normals_t[stoi(idx[2]) - 1]);
+                int p2Idx = stoi(idx[0]) + oldV_size - 1;
+                int n2Idx = stoi(idx[2]) + oldN_size - 1;
 
                 split(line_splitted[3], idx, '/');
-                vertices.push_back(vertices_t[stoi(idx[0]) - 1]);
-                normals.push_back(normals_t[stoi(idx[2]) - 1]);
+                int p3Idx = stoi(idx[0]) + oldV_size - 1;
+                int n3Idx = stoi(idx[2]) + oldN_size - 1;
+
+                Triangle t = {
+                    p1Idx,
+                    p2Idx,
+                    p3Idx,
+                    n1Idx,
+                    n2Idx,
+                    n3Idx,
+                    materialIdx
+                };
+                triangles.push_back(t);
             }
         }
 
-        cout << "Done : " << vertices.size() << " vertices" << endl;
+        cout << "Done : " << triangles.size() << " triangles" << endl;
 
         obj_file.close();
+        
+        return triangles;
         
     } else {
             cerr << obj_file_path << " not found." << endl;

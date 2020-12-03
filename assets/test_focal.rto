@@ -1,0 +1,64 @@
+Material blue {
+    color = (0,0, 1)
+    roughness = 0.07
+}
+
+Material green {
+    color = (0,1,0)
+    roughness = 1
+}
+
+Material red {
+    color = (1,0,0)
+    roughness = 1
+}
+
+Material white {
+    color = (1,1,1)
+    roughness = 0.3
+}
+
+Material light {
+    light = true
+    color = (1,1,1)
+    emit_intensity = 1
+}
+
+
+
+Mesh {
+    obj_file = ../assets/objs/test_focal/plan.obj
+    material = white
+}
+
+Mesh {
+    obj_file = ../assets/objs/test_focal/cube1.obj
+    material = red
+}
+
+Mesh {
+    obj_file = ../assets/objs/test_focal/cube2.obj
+    material = green
+}
+
+Mesh {
+    obj_file = ../assets/objs/test_focal/cube3.obj
+    material = blue
+}
+
+Sphere {
+    center = (0,0.6,3)
+    radius = 0.4
+    material = light
+}
+
+
+Camera {
+    position = (0.05,0.05, 1.2)
+    look_at = (0.05, 0.05, 0)
+    fov = 40
+    focal_plane = -0.02
+}
+
+output_width = 1000
+output_heigth = 1000

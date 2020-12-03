@@ -18,6 +18,11 @@ Material red {
     roughness = 1
 }
 
+Material glossywhite {
+    color = (0.8, 0.8 ,0.8)
+    roughness = 0.07
+}
+
 Material light{
     light = true
     color = (1,1,1)
@@ -59,6 +64,11 @@ Mesh {
     material = white
 }
 
+Mesh {
+    obj_file = ../assets/objs/spaceship/ground.obj
+    material = glossywhite
+}
+
 
 Sphere {
     center = (1, 1, 2.5)
@@ -74,5 +84,5 @@ Camera {
 }
 
 
-output_width = 600
-output_heigth = 400
+output_width = 1280
+output_heigth = 720
