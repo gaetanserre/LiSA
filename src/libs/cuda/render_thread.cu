@@ -244,7 +244,7 @@ void trace(glm::mat4 PVMatrix, glm::vec3 cameraPos, glm::vec2 focal_plane,
         float t_fp = (focal_plane.x - cameraPos.z)/dir.z;
         glm::vec3 p_fp = cameraPos + t_fp * dir;
         glm::vec3 randUnif = Rand3Normal(&seed, randomVector);
-        cameraPos = cameraPos + 0.01f * randUnif;
+        cameraPos = cameraPos + 0.0005f * randUnif;
         dir = p_fp - cameraPos;
     }
 
