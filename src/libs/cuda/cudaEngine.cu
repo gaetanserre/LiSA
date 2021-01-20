@@ -72,7 +72,7 @@ void CudaEngine::run(int width, int heigth, int nb_passe, int nb_sample,
     glm::vec3 dimGrid(width/20, heigth/20, 1);
     glm::vec3 dimBlock(20, 20, 1);
 
-    cout << "Starting rendering on " << nb_passe << " passe(s) and " << nb_sample <<" sample(s)..." << endl;
+    cout << "Starting rendering on " << nb_passe << " pass(es) and " << nb_sample <<" sample(s)..." << endl;
     clock_t start = startChrono();
     CudaThread thread(image,
                      this->materials,
