@@ -1,5 +1,7 @@
 # LiSA Path Tracing Renderer
 
+![](images/icon150x150.png)
+
 LiSA is a path tracing rendering engine developped in C++ using CUDA 11 and GLM.
 
 LiSA runs in multiple CUDA threads and uses the Monte-Carlo rendering technique.
@@ -138,24 +140,24 @@ There are some limitations to LiSA:
 
 ## Some images
 ````assets/chess_pawn.rto````
-![](results_images/chess/result.png)
+![](images/results_images/chess/result.png)
 
 ````assets/cornell_box.rto````
-![](results_images/cornell_box/result1.png)
+![](images/results_images/cornell_box/result1.png)
 
 ````assets/cornell_box.rto```` with square light
-![](results_images/cornell_box/result2.png)
+![](images/results_images/cornell_box/result2.png)
 
 ````assets/spaceship.rto````
 
 model from https://benedikt-bitterli.me/resources/
-![](results_images/spaceship/result.png)
+![](images/results_images/spaceship/result.png)
 
 ````assets/dragon.tro````
-![](results_images/dragon/result.png)
+![](images/results_images/dragon/result.png)
 
 ````assets/stormtrooper.rto````
-![](results_images/stormtrooper/result1.png)
+![](images/results_images/stormtrooper/result1.png)
 
 
 ## TODO list
