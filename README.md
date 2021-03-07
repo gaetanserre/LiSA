@@ -6,7 +6,7 @@ LiSA is a path tracing rendering engine developped in C++ using CUDA 11 and GLM.
 
 LiSA runs in multiple CUDA threads and uses the Monte-Carlo rendering technique.
 
-You can see some examples of rendered image [here](#Some-images).
+You can see some examples of rendered images [here](#Some-images).
 
 ## Build and usage
 
@@ -40,7 +40,7 @@ TODO
 The syntax is quite free: 
 - Material names have the same constraints as C/C++ variables.
 - You can skip lines or add as many spaces as you want.
-- Any text between "/\*" and "\*/" is treated as a comment
+- Any text between ```/*``` and ```*/``` is treated as a comment
 
 ### Scene file example
 ````
@@ -153,7 +153,7 @@ There are some limitations to LiSA:
 model from https://benedikt-bitterli.me/resources/
 ![](images/results_images/spaceship/result.png)
 
-````assets/dragon.tro````
+````assets/dragon.rto````
 ![](images/results_images/dragon/result.png)
 
 ````assets/stormtrooper.rto````
