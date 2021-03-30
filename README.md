@@ -139,6 +139,9 @@ There are some limitations to LiSA:
 - LiSA is slow.
 
 ## Some images
+In order to use these scenes files, you to be inside the `out/` folder.
+
+
 ````assets/chess_pawn.rto````
 ![](images/results_images/chess/result.png)
 
