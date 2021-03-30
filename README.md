@@ -153,7 +153,6 @@ There are some limitations to LiSA:
 model from https://benedikt-bitterli.me/resources/
 ![](images/results_images/spaceship/result.png)
 
-````assets/dragon.rto````
 ![](images/results_images/dragon/result.png)
 
 ````assets/stormtrooper.rto````
