@@ -129,9 +129,14 @@ void SceneBuilder::buildMaterials(vector<string> materials_str) {
         Material m;
         glm::vec3 color;
         regex color_rgx = searchVector("color");
-        if(regex_search(s.begin(), s.end(), match, color_rgx))
+        if(regex_search(s.begin(), s.end(), match, color_rgx)){
             color = glm::vec3(stof(match[1]), stof(match[3]), stof(match[5]));
-        else
+            if (color[0] > 1 || color[1] > 1 || color[2] > 1) {
+            	color[0] /= 255.0;
+            	color[1] /= 255.0;
+            	color[2] /= 255.0;
+            }
+        } else
             throwErrorMat("no valid color provided in material " + name + ".");
 
         /******* Search emit/roughness *******/
