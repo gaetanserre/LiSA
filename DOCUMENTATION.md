@@ -8,7 +8,7 @@ every geometrical data (spheres, triangles, normals, material, camera, ...) and 
 to the `cudaEngine` instance. Then, this instance allocates memory on the stack of the GPU and copy the previous data inside it.
 4. To finish, the `Engine` instance asks for the `cudaEngine` to run. It will create a `CudaPool` instance which will, 
 for each pixel of the final image, create a thread which will compute the color of it, using all
-the geometrical data previously stored inside the GPU memory.
+the geometrical data previously stored inside the GPU memory. This is were the path tracing algorithm is used.
 5. Then, every pointers are freed (I hope 😅) and the final image is saved.
 
 + `Engine` → libs/engine.cpp headers/engine.hpp
