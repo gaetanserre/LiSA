@@ -1,7 +1,5 @@
 # LiSA Path Tracing Renderer
 
-![](images/icon150x150.png)
-
 LiSA is a path tracing rendering engine developped in C++ using CUDA 11 and GLM.
 
 LiSA runs in multiple CUDA threads and uses the Monte-Carlo rendering technique.
@@ -35,6 +33,7 @@ TODO
 - The number of samples correponds to the number of times a ray can bounce. Default is 3.
 - You have to provide a file describing the scene you want LiSA to render. You can find some examples [below](#Scene-file-example) or in the folder ````assets````.
 - In the scene file you need one camera, atleast one material and output dimension. See [Limitations](#Limitations) to learn more.
+- For more detailed information see [DOCUMENTATION.md](DOCUMENTATION.md)
 
 ## Scene file
 The syntax is quite free: 
@@ -144,35 +143,36 @@ In order to use these scenes files, you to be inside the `out/` folder.
 
 
 ````assets/chess_pawn.rto````
-![](images/results_images/chess/result.png)
+![](result_images/chess/result.png)
 
 ````assets/cornell_box.rto````
-![](images/results_images/cornell_box/result1.png)
+![](result_images/cornell_box/result1.png)
 
 ````assets/cornell_box.rto```` with square light
-![](images/results_images/cornell_box/result2.png)
+![](result_images/cornell_box/result2.png)
 
 ````assets/spaceship.rto````
 
 model from https://benedikt-bitterli.me/resources/
-![](images/results_images/spaceship/result.png)
+![](result_images/spaceship/result.png)
 
-![](images/results_images/dragon/result.png)
+![](result_images/dragon/result.png)
 
 ````assets/stormtrooper.rto````
-![](images/results_images/stormtrooper/result1.png)
+![](result_images/stormtrooper/result1.png)
 
 
 ## TODO list
-- ~~Anti aliasing.~~
-- ~~Focal plane~~
-- Optimize the computation time.
-- Add the Disney's BRDF
-- Add transparency and refraction.
-- Add support for texture.
+- [x] Anti aliasing.
+- [x] Focal plane
+- [ ] Optimize the computation time.
+- [ ] Add the Disney's BRDF
+- [ ] Add transparency and refraction.
+- [ ] Add support for texture.
 
 ## Credits
 - [GLSL Path tracer](https://github.com/knightcrawler25/GLSL-PathTracer). An amazing renderer. I took a lot of .obj for testing LiSA from here. 
 - [Scratchpixel 2.0](https://www.scratchapixel.com/) for their lessons about ray tracing, monte carlo, etc..
+- [Tyro](https://wwwtyro.net/2018/02/25/caffeine.html) for the excellent tutorial and explanations
 ## License
 [GNU v3](https://choosealicense.com/licenses/gpl-3.0/)
