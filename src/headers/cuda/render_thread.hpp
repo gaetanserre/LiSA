@@ -1,9 +1,9 @@
 #include "../dependencies.hpp"
 #include "3Dstructs.hpp"
 
-class CudaThread {
+class CudaPool {
     public:
-        CudaThread(
+        CudaPool(
             glm::vec3* image,
             Material* materials,
             Sphere *spheres,

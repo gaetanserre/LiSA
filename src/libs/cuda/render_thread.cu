@@ -307,7 +307,7 @@ void trace(glm::mat4 PVMatrix, glm::vec3 cameraPos, glm::vec2 focal_plane,
     image[idx] = image[idx] + (accumulator/float(nb_passe));
 }
 
-CudaThread::CudaThread(
+CudaPool::CudaPool(
     glm::vec3* image,
     Material* materials,
     Sphere *spheres,

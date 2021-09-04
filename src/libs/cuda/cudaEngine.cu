@@ -74,7 +74,7 @@ void CudaEngine::run(int width, int heigth, int nb_passe, int nb_sample,
 
     cout << "Starting rendering on " << nb_passe << " pass(es) and " << nb_sample <<" sample(s)..." << endl;
     clock_t start = startChrono();
-    CudaThread thread(image,
+    CudaPool pool(image,
                      this->materials,
                      this->spheres, this->triangles,
                      this->meshes_vertices,
