@@ -4,9 +4,8 @@ libs = ../src/libs
 all : LiSA
 
 LiSA : main.o engine.o scene_builder.o parse_obj.o export_image.o cudaEngine.o 3Dstructs.o render_thread.o
-	rm -rf ../out
-	mkdir ../out
-	$(CUDA) $^ -o ../out/$@
+	rm -rf $@
+	$(CUDA) $^ -o $@
 
 main.o : ../src/main.cpp
 	$(CUDA) -dc $^
@@ -34,4 +33,4 @@ render_thread.o : $(libs)/cuda/render_thread.cu
 
 clean :
 	rm -rf *.o
-	rm -rf ../out
+	rm -rf LiSA
