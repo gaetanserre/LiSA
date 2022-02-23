@@ -375,7 +375,9 @@ endfunction()
 # If you wish to start your own sample, you can copy one of the sample's directories.
 # Just make sure you rename all the occurances of the sample's name in the C code as well
 # and the CMakeLists.txt file.
-add_subdirectory( optixHello             )
+add_subdirectory(optixHello)
+add_subdirectory(optixSphere)
+add_subdirectory(optixTriangle)
 
 # Our sutil library.  The rules to build it are found in the subdirectory.
 add_subdirectory(sutil)
