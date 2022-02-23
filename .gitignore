@@ -4,3 +4,4 @@ out/
 .vscode/
 dragon.rto
 dragon/
+build/
