@@ -93,8 +93,8 @@ static void context_log_cb( unsigned int level, const char* tag, const char* mes
 int main( int argc, char* argv[] )
 {
     std::string outfile;
-    int         width  = 1024;
-    int         height =  768;
+    int         width  = 100;
+    int         height =  100;
 
     for( int i = 1; i < argc; ++i )
     {
