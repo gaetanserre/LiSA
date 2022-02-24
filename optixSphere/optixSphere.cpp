@@ -160,13 +160,18 @@ int main( int argc, char* argv[] )
             accel_options.operation  = OPTIX_BUILD_OPERATION_BUILD;
 
             // AABB build input
-            OptixAabb   aabb = {-1.5f, -1.5f, -1.5f, 1.5f, 1.5f, 1.5f};
+            std::array<OptixAabb, 2> aabbs = 
+            { {
+                {-0.2f, -0.2f, -0.2f, 0.2f, 0.2f, 0.2f},
+                {0.3f, -0.2f, -0.2f, 0.8f, 0.2f, 0.2f}
+            } };
+            const size_t aabbs_size = sizeof(OptixAabb)* aabbs.size();
             CUdeviceptr d_aabb_buffer;
-            CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_aabb_buffer ), sizeof( OptixAabb ) ) );
+            CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_aabb_buffer ), aabbs_size ) );
             CUDA_CHECK( cudaMemcpy(
                         reinterpret_cast<void*>( d_aabb_buffer ),
-                        &aabb,
-                        sizeof( OptixAabb ),
+                        aabbs.data(),
+                        aabbs_size,
                         cudaMemcpyHostToDevice
                         ) );
 
@@ -174,7 +179,7 @@ int main( int argc, char* argv[] )
 
             aabb_input.type                               = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
             aabb_input.customPrimitiveArray.aabbBuffers   = &d_aabb_buffer;
-            aabb_input.customPrimitiveArray.numPrimitives = 1;
+            aabb_input.customPrimitiveArray.numPrimitives = 2;
 
             uint32_t aabb_input_flags[1]                  = {OPTIX_GEOMETRY_FLAG_NONE};
             aabb_input.customPrimitiveArray.flags         = aabb_input_flags;

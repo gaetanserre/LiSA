@@ -93,8 +93,8 @@ static void context_log_cb( unsigned int level, const char* tag, const char* mes
 int main( int argc, char* argv[] )
 {
     std::string outfile;
-    int         width  = 100;
-    int         height =  100;
+    int         width  = 1280;
+    int         height =  720;
 
     for( int i = 1; i < argc; ++i )
     {
@@ -167,14 +167,19 @@ int main( int argc, char* argv[] )
             accel_options.operation  = OPTIX_BUILD_OPERATION_BUILD;
 
             // Triangle build input: simple list of three vertices
-            const std::array<float3, 3> vertices =
-            { {
+            const std::array<float3, 6> vertices =
+            { 
+              {
                   { -0.5f, -0.5f, 0.0f },
+                  { -0.5f,  0.5f, 0.0f },
                   {  0.5f, -0.5f, 0.0f },
-                  {  0.0f,  0.5f, 0.0f }
-            } };
+                  {  0.5f,  0.5f, 0.0f },
+                  { -0.5f,  0.5f, 0.0f },
+                  {  0.5f, -0.5f, 0.0f }
+              } 
+            };
 
-            const size_t vertices_size = sizeof( float3 )*vertices.size();
+            const size_t vertices_size = sizeof( float3 ) * vertices.size();
             CUdeviceptr d_vertices=0;
             CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_vertices ), vertices_size ) );
             CUDA_CHECK( cudaMemcpy(
@@ -183,6 +188,7 @@ int main( int argc, char* argv[] )
                         vertices_size,
                         cudaMemcpyHostToDevice
                         ) );
+                        
 
             // Our build input is a simple list of non-indexed triangle vertices
             const uint32_t triangle_input_flags[1] = { OPTIX_GEOMETRY_FLAG_NONE };
@@ -202,6 +208,8 @@ int main( int argc, char* argv[] )
                         1, // Number of build inputs
                         &gas_buffer_sizes
                         ) );
+            std::cout << "Size1: " << gas_buffer_sizes.tempSizeInBytes << "\n";
+            std::cout << "Size2: " << gas_buffer_sizes.tempSizeInBytes << "\n";
             CUdeviceptr d_temp_buffer_gas;
             CUDA_CHECK( cudaMalloc(
                         reinterpret_cast<void**>( &d_temp_buffer_gas ),

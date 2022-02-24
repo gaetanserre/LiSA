@@ -68,8 +68,6 @@ extern "C" __global__ void __raygen__rg()
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
-    printf("idx: %d %d dim: %d %d\n", idx.x, idx.y, dim.x, dim.y);
-
     // Map our launch idx to a screen location and create a ray from the camera
     // location through the screen
     float3 ray_origin, ray_direction;
