@@ -686,8 +686,8 @@ void createModule( PathTracerState& state )
 {
     OptixModuleCompileOptions module_compile_options = {};
     module_compile_options.maxRegisterCount  = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
-    module_compile_options.optLevel          = OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
-    module_compile_options.debugLevel        = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL;
+    module_compile_options.optLevel          = OPTIX_COMPILE_OPTIMIZATION_LEVEL_0;
+    module_compile_options.debugLevel        = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
 
     state.pipeline_compile_options.usesMotionBlur        = false;
     state.pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
@@ -1092,7 +1092,6 @@ int main( int argc, char* argv[] )
                     glfwSwapBuffers( window );
 
                     ++state.params.subframe_index;
-                    printf("frame: %d\n", state.params.subframe_index);
                 } while( !glfwWindowShouldClose( window ) );
                 CUDA_SYNC_CHECK();
             }
