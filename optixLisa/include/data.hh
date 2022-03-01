@@ -4,7 +4,7 @@ int width = 1000;
 int height = 1000;
 int samples_per_launch = 16;
 
-const int VERTICE_COUNT = 32 * 3;
+const int VERTICE_COUNT = 30 * 3;
 const int MAT_COUNT      = 4;
 
 const static float4 vertices[] =
@@ -136,13 +136,13 @@ const static float4 vertices[] =
   {  423.0f,    0.0f,  247.0f, 0.0f },
 
   // Ceiling light -- emmissive
-  {  343.0f,  548.6f,  227.0f, 0.0f },
+/*   {  343.0f,  548.6f,  227.0f, 0.0f },
   {  213.0f,  548.6f,  227.0f, 0.0f },
   {  213.0f,  548.6f,  332.0f, 0.0f },
 
   {  343.0f,  548.6f,  227.0f, 0.0f },
   {  213.0f,  548.6f,  332.0f, 0.0f },
-  {  343.0f,  548.6f,  332.0f, 0.0f }
+  {  343.0f,  548.6f,  332.0f, 0.0f } */
 };
 
 const int mat_indices[] = {
@@ -152,25 +152,13 @@ const int mat_indices[] = {
     1, 1,                          // Right wall    -- green lambert
     2, 2,                          // Left wall     -- red lambert
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // Short block   -- white lambert
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // Tall block    -- white lambert
-    3, 3                           // Ceiling light -- emissive
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3   // Tall block    -- white lambert
 };
 
 
-
-const float3 emission_colors[] =
-{
-  {  0.0f,  0.0f,  0.0f },
-  {  0.0f,  0.0f,  0.0f },
-  {  0.0f,  0.0f,  0.0f },
-  { 15.0f, 15.0f,  5.0f },
-};
-
-
-const float3 diffuse_colors[] =
-{
-  { 0.80f, 0.80f, 0.80f },
-  { 0.05f, 0.80f, 0.05f },
-  { 0.80f, 0.05f, 0.05f },
-  { 0.50f, 0.00f, 0.00f },
+const Material materials[] = {
+  mk_material({0.80f, 0.80f, 0.80f}, false),
+  mk_material({0.05f, 0.80f, 0.05f}, false),
+  mk_material({0.80f, 0.05f, 0.05f}, false),
+  mk_material({1.0f, 1.0f, 1.0f}, true)
 };

@@ -155,7 +155,7 @@ namespace optix_wrapper {
     state.pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
 
     size_t      inputSize = 0;
-    const char* input     = sutil::getInputData(OPTIX_SAMPLE_NAME, OPTIX_SAMPLE_DIR, "shader.cu", inputSize);
+    const char* input     = sutil::getInputData(OPTIX_SAMPLE_NAME, OPTIX_SAMPLE_DIR, "shader2.cu", inputSize);
 
     char   log[2048];
     size_t sizeof_log = sizeof(log);
@@ -213,8 +213,8 @@ namespace optix_wrapper {
 
       memset(&miss_prog_group_desc, 0, sizeof(OptixProgramGroupDesc));
       miss_prog_group_desc.kind                   = OPTIX_PROGRAM_GROUP_KIND_MISS;
-      miss_prog_group_desc.miss.module            = nullptr;  // NULL miss program for occlusion rays
-      miss_prog_group_desc.miss.entryFunctionName = nullptr;
+      miss_prog_group_desc.miss.module            = state.ptx_module;
+      miss_prog_group_desc.miss.entryFunctionName = "__miss__occlusion";
       sizeof_log                                  = sizeof( log );
       OPTIX_CHECK_LOG(optixProgramGroupCreate(
                   state.context, &miss_prog_group_desc,
@@ -242,7 +242,7 @@ namespace optix_wrapper {
                   &state.radiance_hit_group
                   ));
 
-      memset(&hit_prog_group_desc, 0, sizeof( OptixProgramGroupDesc));
+      memset(&hit_prog_group_desc, 0, sizeof(OptixProgramGroupDesc));
       hit_prog_group_desc.kind                         = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
       hit_prog_group_desc.hitgroup.moduleCH            = state.ptx_module;
       hit_prog_group_desc.hitgroup.entryFunctionNameCH = "__closesthit__occlusion";
@@ -330,8 +330,7 @@ namespace optix_wrapper {
   typedef Record<MissData>     MissRecord;
   typedef Record<HitGroupData> HitGroupRecord;
   void create_shaders_binding_table(RendererState &state,
-                                    const float3* diffuse_colors,
-                                    const float3* emission_colors,
+                                    const Material* materials,
                                     const int num_materials)
   {
     const int RAY_TYPE_COUNT = 2;
@@ -381,14 +380,14 @@ namespace optix_wrapper {
             const int sbt_idx = i * RAY_TYPE_COUNT + 0;  // SBT for radiance ray-type for ith material
 
             OPTIX_CHECK(optixSbtRecordPackHeader(state.radiance_hit_group, &hitgroup_records[sbt_idx]));
-            hitgroup_records[sbt_idx].data.emission_color = emission_colors[i];
-            hitgroup_records[sbt_idx].data.diffuse_color  = diffuse_colors[i];
-            hitgroup_records[sbt_idx].data.vertices       = reinterpret_cast<float4*>(state.d_vertices);
+            hitgroup_records[sbt_idx].data.material = materials[i];
+            hitgroup_records[sbt_idx].data.vertices = reinterpret_cast<float4*>(state.d_vertices);
         }
 
         {
             const int sbt_idx = i * RAY_TYPE_COUNT + 1;  // SBT for occlusion ray-type for ith material
-            memset(&hitgroup_records[sbt_idx], 0, hitgroup_record_size);
+            hitgroup_records[sbt_idx].data.material = materials[i];
+            //memset(&hitgroup_records[sbt_idx], 0, hitgroup_record_size);
 
             OPTIX_CHECK(optixSbtRecordPackHeader(state.occlusion_hit_group, &hitgroup_records[sbt_idx]));
         }
@@ -425,11 +424,11 @@ namespace optix_wrapper {
     state.params.samples_per_launch = samples_per_launch;
     state.params.subframe_index     = 0u;
 
-    state.params.light.emission = make_float3( 15.0f, 15.0f, 5.0f );
+    /* state.params.light.emission = make_float3( 15.0f, 15.0f, 5.0f );
     state.params.light.corner   = make_float3( 343.0f, 548.5f, 227.0f );
     state.params.light.v1       = make_float3( 0.0f, 0.0f, 105.0f );
     state.params.light.v2       = make_float3( -130.0f, 0.0f, 0.0f );
-    state.params.light.normal   = normalize( cross( state.params.light.v1, state.params.light.v2 ) );
+    state.params.light.normal   = normalize( cross( state.params.light.v1, state.params.light.v2 ) ); */
     state.params.handle         = state.d_gas_handler;
 
     sutil::Camera camera;

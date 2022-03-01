@@ -16,8 +16,7 @@ namespace optix_wrapper {
   void create_pipeline(RendererState &state);
 
   void create_shaders_binding_table(RendererState &state,
-                                    const float3* diffuse_colors,
-                                    const float3* emission_colors,
+                                    const Material* materials,
                                     const int num_materials);
 
   void init_params(RendererState & state, int samples_per_launch, int width, int height);

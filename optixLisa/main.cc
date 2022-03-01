@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   optix_wrapper::create_module(state);
   optix_wrapper::create_programs(state);
   optix_wrapper::create_pipeline(state);
-  optix_wrapper::create_shaders_binding_table(state, diffuse_colors, emission_colors, MAT_COUNT);
+  optix_wrapper::create_shaders_binding_table(state, materials, MAT_COUNT);
   optix_wrapper::init_params(state, samples_per_launch, width, height);
 
   display::render(state);

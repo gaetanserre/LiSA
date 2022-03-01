@@ -3,6 +3,7 @@
 #include <optix.h>
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include <sutil/vec_math.h>
 
 enum RayType
 {
@@ -10,6 +11,26 @@ enum RayType
     RAY_TYPE_OCCLUSION = 1,
     RAY_TYPE_COUNT
 };
+
+struct Material {
+  float3 diffuse_color;
+  bool emit;
+  float3 emission_color;
+};
+
+static Material mk_material(float3 color, bool emit) {
+  Material material;
+  if (emit) {
+    material.emit = true;
+    material.emission_color = color;
+    material.diffuse_color = make_float3(0.0f);
+  } else {
+    material.emit = false;
+    material.emission_color = make_float3(0.0f);
+    material.diffuse_color = color;
+  }
+  return material;
+}
 
 struct ParallelogramLight {
     float3 corner;
@@ -31,7 +52,6 @@ struct Params {
     float3       V;
     float3       W;
 
-    ParallelogramLight     light; // TODO: make light list
     OptixTraversableHandle handle;
 };
 
@@ -66,8 +86,7 @@ struct MissData {
 
 
 struct HitGroupData {
-  float3  emission_color;
-  float3  diffuse_color;
+  Material material;
   float4* vertices;
 };
 

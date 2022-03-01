@@ -206,6 +206,10 @@ static __forceinline__ __device__ bool traceOcclusion(
 
 extern "C" __global__ void __raygen__rg()
 {
+
+
+
+
     const int    w   = params.width;
     const int    h   = params.height;
     const float3 eye = params.eye;
@@ -223,6 +227,10 @@ extern "C" __global__ void __raygen__rg()
     {
         // The center of each pixel is at fraction (0.5,0.5)
         const float2 subpixel_jitter = make_float2( rnd( seed ), rnd( seed ) );
+
+
+
+
 
         const float2 d = 2.0f * make_float2(
                 ( static_cast<float>( idx.x ) + subpixel_jitter.x ) / static_cast<float>( w ),
