@@ -39,23 +39,27 @@ struct Intersection
   unsigned int seed;
 };
 
+static __forceinline__ __device__ Intersection* getInter() {
+    const unsigned int u0 = optixGetPayload_0();
+    const unsigned int u1 = optixGetPayload_1();
+    return reinterpret_cast<Intersection*>(unpackPointer(u0, u1));
+}
+
 extern "C" __device__ float rng(unsigned int &seed) {
   return rnd(seed) * 2.0f - 1.0f;
 }
 
-extern "C" __device__ float3 shoot_ray_hemisphere(Intersection* intersection) {
-  float3 random_dir = make_float3(rng(intersection->seed),
-                                  rng(intersection->seed),
-                                  rng(intersection->seed));
+extern "C" __device__ float3 shoot_ray_hemisphere(const float3 normal, unsigned int &seed) {
+  float3 random_dir = normalize(make_float3(rng(seed), rng(seed), rng(seed)));
   
-  return normalize(faceforward(random_dir, intersection->normal, random_dir));
+  return faceforward(random_dir, normal, random_dir);
 }
 
-static __forceinline__ __device__ Intersection* getInter()
-{
-    const unsigned int u0 = optixGetPayload_0();
-    const unsigned int u1 = optixGetPayload_1();
-    return reinterpret_cast<Intersection*>(unpackPointer(u0, u1));
+extern "C" __device__ float3 refract(float3 i, float3 n, float eta) {
+  float cosi = dot(-i, n);
+  float cost2 = 1.0f - eta * eta * (1.0f - cosi*cosi);
+  float3 t = eta*i + ((eta*cosi - sqrt(abs(cost2))) * n);
+  return t * make_float3(cost2 > 0);
 }
 
 
@@ -108,11 +112,6 @@ static __forceinline__ __device__ void trace_radiance(OptixTraversableHandle han
               u0, u1);
 }
 
-extern "C" __device__ void print_color(float3 color) {
-  printf("Color: %f %f %f\n", color.x, color.y, color.z);
-}
-
-
 extern "C" __global__ void __raygen__rg() {
   const float2 size = make_float2(params.width, params.height);
   const float3 eye  = params.eye;
@@ -135,7 +134,7 @@ extern "C" __global__ void __raygen__rg() {
     intersection.seed        = seed;
 
     /* Builds ray direction/origin */
-    const float2 antialiasing_jitter = make_float2(rng(seed), rng(seed));
+    const float2 antialiasing_jitter = normalize(make_float2(rng(seed), rng(seed)));
     const float3 d                   = make_float3((2.0f * idx2 + antialiasing_jitter) / size - 1.0f, 1.0f);
     float3 ray_direction             = normalize(d.x*U + d.y*V + W);
     float3 ray_origin                = eye;
@@ -146,14 +145,15 @@ extern "C" __global__ void __raygen__rg() {
       trace_radiance(params.handle,
                     ray_origin,
                     ray_direction,
-                    0.01f,
+                    1e-6f,
                     1e16f,
                     &intersection);
 
       if (intersection.done) break;
 
+      ray_direction = shoot_ray_hemisphere(intersection.normal, seed);
       ray_origin    = intersection.xyz;
-      ray_direction = shoot_ray_hemisphere(&intersection);
+      seed = intersection.seed;
     }
     accum_color += intersection.accum_color;
   }
@@ -201,34 +201,41 @@ extern "C" __global__ void __miss__radiance() {
 extern "C" __device__ float3 shoot_ray_to_light(Intersection* intersection) {
   const unsigned int count = 7u;
   for (int i = 0; i < count; i++) {
-    float3 dir = shoot_ray_hemisphere(intersection);
+    float3 dir = shoot_ray_hemisphere(intersection->normal, intersection->seed);
+    Intersection temp;
+    trace_occlusion(params.handle, intersection->xyz, dir, 1e-6f, 1e16f, &temp);
 
-    trace_occlusion(params.handle, intersection->xyz, dir, 0.01f, 1e16f, intersection);
-
-    if (intersection->hit) {
+    if (temp.hit) {
       const float d = clamp(dot(intersection->normal, dir), 0.0f, 1.0f);
-      return d * intersection->material.emission_color;
+      return d * temp.material.emission_color;
     }
   }
   return make_float3(0.0f);
 }
 
-extern "C" __device__ float3 barycentric_normal(Intersection* intersection, const float3 v1, const float3 v2, const float3 v3) {
+extern "C" __device__ float3 barycentric_normal(const float3 hit_point,
+                                                const float3 n1,
+                                                const float3 n2,
+                                                const float3 n3,
+                                                const float3 v1,
+                                                const float3 v2,
+                                                const float3 v3)
+{
   const float3 edge1 = v2 - v1;
   const float3 edge2 = v3 - v1;
-  const float3 i = intersection->xyz - v1;
+  const float3 i = hit_point - v1;
   const float d00 = dot(edge1, edge1);
   const float d01 = dot(edge1, edge2);
-  const float d11 = dot(edge2,edge2);
+  const float d11 = dot(edge2, edge2);
   const float d20 = dot(i, edge1);
   const float d21 = dot(i, edge2);
   const float denom = d00 * d11 - d01 * d01;
 
-  const float v = (d11 * d20 - d01 * d21) / denom;
   const float w = (d00 * d21 - d01 * d20) / denom; 
+  const float v = (d11 * d20 - d01 * d21) / denom;
   const float u = 1 - v - w;
 
-  return intersection->normal * (v + w + u);
+  return u*n1 + v*n2 + w*n3;
 }
 
 extern "C" __global__ void __closesthit__radiance() {
@@ -240,20 +247,23 @@ extern "C" __global__ void __closesthit__radiance() {
     intersection->accum_color += rt_data->material.emission_color * intersection->mask_color;
     intersection->done = true;
   } else {
-    intersection->mask_color *= rt_data->material.diffuse_color;
 
     const int    prim_idx        = optixGetPrimitiveIndex();
-    const float3 ray_dir         = optixGetWorldRayDirection();
     const int    vert_idx_offset = prim_idx*3;
+    const float3 ray_dir         = optixGetWorldRayDirection();
 
-    const float3 v1      = make_float3(rt_data->vertices[vert_idx_offset + 0]);
-    const float3 v2      = make_float3(rt_data->vertices[vert_idx_offset + 1]);
-    const float3 v3      = make_float3(rt_data->vertices[vert_idx_offset + 2]);
-    float3 N_0           = normalize(cross(v2-v1, v3-v1));
-    intersection->normal = faceforward(N_0, -ray_dir, N_0);
     intersection->xyz    = optixGetWorldRayOrigin() + optixGetRayTmax() * ray_dir;
-    intersection->normal = barycentric_normal(intersection, v1, v2, v3);
+    const float3 v1      = rt_data->vertices[vert_idx_offset + 0];
+    const float3 v2      = rt_data->vertices[vert_idx_offset + 1];
+    const float3 v3      = rt_data->vertices[vert_idx_offset + 2];
+    const float3 n1      = rt_data->normals[vert_idx_offset + 0];
+    const float3 n2      = rt_data->normals[vert_idx_offset + 1];
+    const float3 n3      = rt_data->normals[vert_idx_offset + 2];
+    intersection->normal = barycentric_normal(intersection->xyz,
+                                              n1, n2, n3,
+                                              v1, v2, v3);
 
+    intersection->mask_color *= rt_data->material.diffuse_color;
     intersection->accum_color += shoot_ray_to_light(intersection) * intersection->mask_color;
   }
 }

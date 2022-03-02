@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STRUCTS_HH
+#define STRUCTS_HH
 
 #include <optix.h>
 #include <cuda_runtime.h>
@@ -13,30 +14,32 @@ enum RayType
 };
 
 struct Material {
+  float roughness;
   float3 diffuse_color;
   bool emit;
   float3 emission_color;
 };
 
-static Material mk_material(float3 color, bool emit) {
+inline Material mk_material_emit(float3 color) {
   Material material;
-  if (emit) {
-    material.emit = true;
-    material.emission_color = color;
-    material.diffuse_color = make_float3(0.0f);
-  } else {
-    material.emit = false;
-    material.emission_color = make_float3(0.0f);
-    material.diffuse_color = color;
-  }
+  material.emit = true;
+  material.emission_color = color;
   return material;
-}
+};
 
-struct ParallelogramLight {
-    float3 corner;
-    float3 v1, v2;
-    float3 normal;
-    float3 emission;
+inline Material mk_material_diffuse(float3 color, float roughness) {
+  Material material;
+  material.emit = false;
+  material.roughness = roughness;
+  material.diffuse_color = color;
+  return material;
+};
+
+struct Camera {
+  float3 eye;
+  float3 look_at;
+  float fov;
+  float2 focal_plane; //focal_plane.x is the focal plane, if focal_plane.y = 0, focal plane is not used
 };
 
 struct Params {
@@ -61,6 +64,7 @@ struct RendererState {
   CUstream stream = 0;
 
   CUdeviceptr d_vertices = 0;
+  CUdeviceptr d_normals = 0;
   CUdeviceptr d_gas_handler = 0;
 
   OptixPipeline               pipeline = 0;
@@ -87,7 +91,11 @@ struct MissData {
 
 struct HitGroupData {
   Material material;
-  float4* vertices;
+  float3* vertices;
+  float3* normals;
 };
 
 struct RayGenData {};
+
+
+#endif // STRUCTS_HH

@@ -1,11 +1,11 @@
 #include <cuda_runtime.h>
 
-int width  = 1000;
-int height = 1000;
+int width  = 500;
+int height = 500;
 int samples_per_launch = 16;
 
 const int VERTICE_COUNT = 32 * 3;
-const int MAT_COUNT      = 4;
+const int MAT_COUNT     = 5;
 
 const static float4 vertices[] =
 {
@@ -158,8 +158,8 @@ const int mat_indices[] = {
 
 
 const Material materials[] = {
-  mk_material({1.0f, 1.0f, 1.0f}, false),
-  mk_material({0.0f, 1.0f, 0.0f}, false),
-  mk_material({1.0f, 0.0f, 0.0f}, false),
-  mk_material({1.0f, 1.0f, 1.0f}, true)
+  mk_material_diffuse({1.0f, 1.0f, 1.0f}, 1),
+  mk_material_diffuse({0.0f, 1.0f, 0.0f}, 1),
+  mk_material_diffuse({1.0f, 0.0f, 0.0f}, 1),
+  mk_material_emit({1.0f, 1.0f, 1.0f})
 };

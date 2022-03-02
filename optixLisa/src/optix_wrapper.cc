@@ -12,13 +12,13 @@
 template <typename T>
 struct Record
 {
-    __align__( OPTIX_SBT_RECORD_ALIGNMENT ) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
-    T data;
+  __align__( OPTIX_SBT_RECORD_ALIGNMENT ) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+  T data;
 };
 
 static void context_log_cb( unsigned int level, const char* tag, const char* message, void* /*cbdata */ )
 {
-    std::cerr << "[" << std::setw( 2 ) << level << "][" << std::setw( 12 ) << tag << "]: " << message << "\n";
+  std::cerr << "[" << std::setw( 2 ) << level << "][" << std::setw( 12 ) << tag << "]: " << message << "\n";
 }
 
 namespace optix_wrapper {
@@ -44,15 +44,16 @@ namespace optix_wrapper {
   /**** MESH HANDLER ****/
 
   void create_mesh_handler(RendererState &state,
-                            const float4* vertices,
-                            const int* idx_material,
+                            const float3* vertices,
+                            const float3* normals,
+                            const int* mat_indices,
                             const int num_materials,
                             const int num_vertices)
   {
     //
     // copy mesh data to device
     //
-    const size_t vertices_size_in_bytes = num_vertices * sizeof(float4);
+    const size_t vertices_size_in_bytes = num_vertices * sizeof(float3);
     CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_vertices), vertices_size_in_bytes));
     CUDA_CHECK(cudaMemcpy(
               reinterpret_cast<void*>(state.d_vertices),
@@ -65,10 +66,18 @@ namespace optix_wrapper {
     CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_mat_indices), mat_indices_size_in_bytes));
     CUDA_CHECK(cudaMemcpy(
                 reinterpret_cast<void*>(d_mat_indices),
-                idx_material,
+                mat_indices,
                 mat_indices_size_in_bytes,
                 cudaMemcpyHostToDevice
                 ));
+    
+    const size_t normals_size_in_bytes = num_vertices * sizeof(float3);
+    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_normals), normals_size_in_bytes));
+    CUDA_CHECK(cudaMemcpy(
+              reinterpret_cast<void*>(state.d_normals),
+              normals, normals_size_in_bytes,
+              cudaMemcpyHostToDevice
+              ));
 
     //
     // Build triangle GAS
@@ -81,7 +90,7 @@ namespace optix_wrapper {
     OptixBuildInput triangle_input                           = {};
     triangle_input.type                                      = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
     triangle_input.triangleArray.vertexFormat                = OPTIX_VERTEX_FORMAT_FLOAT3;
-    triangle_input.triangleArray.vertexStrideInBytes         = sizeof(float4);
+    triangle_input.triangleArray.vertexStrideInBytes         = sizeof(float3);
     triangle_input.triangleArray.numVertices                 = static_cast<uint32_t>(num_vertices);
     triangle_input.triangleArray.vertexBuffers               = &state.d_vertices;
     triangle_input.triangleArray.flags                       = triangle_input_flags;
@@ -155,7 +164,7 @@ namespace optix_wrapper {
     state.pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
 
     size_t      inputSize = 0;
-    const char* input     = sutil::getInputData(OPTIX_SAMPLE_NAME, OPTIX_SAMPLE_DIR, "shader2.cu", inputSize);
+    const char* input     = sutil::getInputData(OPTIX_SAMPLE_NAME, OPTIX_SAMPLE_DIR, "shader.cu", inputSize);
 
     char   log[2048];
     size_t sizeof_log = sizeof(log);
@@ -381,7 +390,8 @@ namespace optix_wrapper {
 
             OPTIX_CHECK(optixSbtRecordPackHeader(state.radiance_hit_group, &hitgroup_records[sbt_idx]));
             hitgroup_records[sbt_idx].data.material = materials[i];
-            hitgroup_records[sbt_idx].data.vertices = reinterpret_cast<float4*>(state.d_vertices);
+            hitgroup_records[sbt_idx].data.vertices = reinterpret_cast<float3*>(state.d_vertices);
+            hitgroup_records[sbt_idx].data.normals  = reinterpret_cast<float3*>(state.d_normals);
         }
 
         {
@@ -411,7 +421,12 @@ namespace optix_wrapper {
 
   /**** INIT PARAMS ****/
 
-  void init_params(RendererState & state, int samples_per_launch, int width, int height) {
+  void init_params(RendererState & state,
+                   int samples_per_launch,
+                   int width,
+                   int height,
+                   Camera camera)
+  {
     state.params.width = width;
     state.params.height = height;
     CUDA_CHECK(cudaMalloc(
@@ -424,22 +439,17 @@ namespace optix_wrapper {
     state.params.samples_per_launch = samples_per_launch;
     state.params.subframe_index     = 0u;
 
-    /* state.params.light.emission = make_float3( 15.0f, 15.0f, 5.0f );
-    state.params.light.corner   = make_float3( 343.0f, 548.5f, 227.0f );
-    state.params.light.v1       = make_float3( 0.0f, 0.0f, 105.0f );
-    state.params.light.v2       = make_float3( -130.0f, 0.0f, 0.0f );
-    state.params.light.normal   = normalize( cross( state.params.light.v1, state.params.light.v2 ) ); */
     state.params.handle         = state.d_gas_handler;
 
-    sutil::Camera camera;
-    camera.setEye( make_float3( 278.0f, 273.0f, -900.0f ) );
-    camera.setLookat( make_float3( 278.0f, 273.0f, 330.0f ) );
-    camera.setUp( make_float3( 0.0f, 1.0f, 0.0f ) );
-    camera.setFovY( 35.0f );
-    camera.setAspectRatio( static_cast<float>(width) / static_cast<float>(height));
+    sutil::Camera scamera;
+    scamera.setEye(camera.eye);
+    scamera.setLookat(camera.look_at);
+    scamera.setUp(make_float3(0.0f, 1.0f, 0.0f));
+    scamera.setFovY(camera.fov);
+    scamera.setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
 
-    state.params.eye = camera.eye();
-    camera.UVWFrame(state.params.U, state.params.V, state.params.W);
+    state.params.eye = scamera.eye();
+    scamera.UVWFrame(state.params.U, state.params.V, state.params.W);
 
     CUDA_CHECK(cudaStreamCreate(&state.stream));
     CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_params), sizeof(Params)));
@@ -463,6 +473,7 @@ namespace optix_wrapper {
     CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.sbt.missRecordBase)));
     CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.sbt.hitgroupRecordBase)));
     CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.d_vertices)));
+    CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.d_normals)));
     CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.d_params)));
   }
 }

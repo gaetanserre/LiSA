@@ -1,3 +1,6 @@
 # Optix test
 
-Some tests for an Optix implementation of LiSA
+## TODO
+- [ ] Tabulation size in scene_builder.{cc, hh}
+- [ ] Roughness
+- [ ] Transparency/Refraction
