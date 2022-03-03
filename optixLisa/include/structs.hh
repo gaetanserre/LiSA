@@ -40,7 +40,7 @@ inline Material mk_material_emit(float3 color) {
 */
 inline Material mk_material_diffuse(float3 color, float alpha, float param) {
   Material material;
-  if (alpha == 0.0f)
+  if (alpha < 1.0f)
     material.n = param;
   else
     material.roughness = param;

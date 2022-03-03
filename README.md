@@ -1,7 +1,7 @@
 # Optix test
 
 ## TODO
-- [ ] CLEAN CODE SHADER REFRACTION
+- [ ] FIX CODE SHADER REFRACTION
 - [x] Tabulation size in scene_builder.{cc, hh}
 - [ ] Roughness
 - [ ] Transparency/Refraction

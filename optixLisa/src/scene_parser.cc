@@ -1,8 +1,9 @@
 #include "scene_parser.hh"
 #include <sstream>
+#include <utility>
 
 string read_file(char* path) {
-  string res = "";
+  string res;
   string line;
   ifstream scene_file (path);
   if (scene_file.is_open()) {
@@ -17,30 +18,30 @@ string read_file(char* path) {
   return res;
 }
 
-void search_dim(string str, int &WIDTH, int &HEIGTH) {
-  auto throwErrorDim = [] (string error) {
+void search_dim(string str, int &WIDTH, int &HEIGHT) {
+  auto throwErrorDim = [] (const string &error) {
     cerr << "Error in output dimension declaration: ";
     cerr << error << endl;
     exit(-1);
   };
 
   smatch match;
-  const string s = str;
+  const string s = std::move(str);
   regex width_rgx ("output_width\\s*=\\s*([0-9]+)");
   if(regex_search(s.begin(), s.end(), match, width_rgx))
     WIDTH = stoi(match[1]);
   else 
     throwErrorDim("no valid width declared.");
 
-  regex heigth_rgx ("output_heigth\\s*=\\s*([0-9]+)");
-  if(regex_search(s.begin(), s.end(), match, heigth_rgx))
-    HEIGTH = stoi(match[1]);
+  regex height_rgx ("output_height\\s*=\\s*([0-9]+)");
+  if(regex_search(s.begin(), s.end(), match, height_rgx))
+    HEIGHT = stoi(match[1]);
   else 
     throwErrorDim("no valid heigth declared.");
 }
 
 
-vector<string> match_reg(string str, regex r) {
+vector<string> match_reg(const string& str, const regex& r) {
   vector<string> res;
   std::smatch match;
 
@@ -53,18 +54,15 @@ vector<string> match_reg(string str, regex r) {
   return res;
 }
 
-string remove_comments(string file) {
-  const string s = file;
+string remove_comments(const string& file) {
   const regex comments_rgx("\\/\\*((.|\n)*?)\\*\\/");
-
   stringstream result;
-  regex_replace(ostream_iterator<char>(result), s.begin(), s.end(), comments_rgx, "");
-
+  regex_replace(ostream_iterator<char>(result), file.begin(), file.end(), comments_rgx, "");
   return result.str();
 }
 
 
-SceneParser::SceneParser(char* path, int &WIDTH, int &HEIGTH) {
+SceneParser::SceneParser(char* path, int &WIDTH, int &HEIGHT) {
   regex Material_reg("Material\\s+"+this->mat_name+"+\\s*\\{\n*[^\\}]*");
   regex Meshes_reg ("Mesh\\s*\\{\n*[^\\}]*");
   regex Camera_reg ("Camera\\s*\\{\n*[^\\}]*");
@@ -73,14 +71,14 @@ SceneParser::SceneParser(char* path, int &WIDTH, int &HEIGTH) {
   string file = read_file(path);
 
   file = remove_comments(file);
-  search_dim(file, WIDTH, HEIGTH);
+  search_dim(file, WIDTH, HEIGHT);
   build_materials(match_reg(file, Material_reg));
   build_meshes(match_reg(file, Meshes_reg));
   build_camera(match_reg(file, Camera_reg));
 }
 
 
-regex search_vector(string begin, int n = 3) {
+regex search_vector(const string& begin, int n = 3) {
 
   std::stringstream reg;
   reg << "\\s*=\\s*\\(";
@@ -95,20 +93,20 @@ regex search_vector(string begin, int n = 3) {
   return res;
 }
 
-regex search_float(string begin) {
+regex search_float(const string& begin) {
   regex r(begin + "\\s*=\\s*([+-]?([0-9]*[.])?[0-9]+)");
   return r;
 }
 
 
 void SceneParser::build_materials(vector<string> materials_str) {
-  auto throw_error_mat = [] (string error) {
+  auto throw_error_mat = [] (const string& error) {
       cerr << "Error in materials declaration: ";
       cerr << error << endl;
       exit(-1);
   };
 
-  if (materials_str.size() < 1)
+  if (materials_str.empty())
       throw_error_mat("no valid materials declared.");
 
   for (long unsigned int i = 0; i<materials_str.size(); i++) {
@@ -161,7 +159,7 @@ void SceneParser::build_materials(vector<string> materials_str) {
 }
 
 void SceneParser::build_meshes(vector<string> meshes_str) {
-  auto throw_error_mesh = [] (string error) {
+  auto throw_error_mesh = [] (const string& error) {
     cerr << "Error in mesh declaration: ";
     cerr << error << endl;
     exit(-1);
@@ -196,7 +194,7 @@ void SceneParser::build_meshes(vector<string> meshes_str) {
 }
 
 void SceneParser::build_camera(vector<string> camera_str) {
-  auto throw_error_camera = [] (string error) {
+  auto throw_error_camera = [] (const string& error) {
     cerr << "Error in camera declaration: ";
     cerr << error << endl;
     exit(-1);
