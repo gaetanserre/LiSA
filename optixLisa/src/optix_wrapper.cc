@@ -282,7 +282,7 @@ namespace optix_wrapper {
     };
 
     OptixPipelineLinkOptions pipeline_link_options = {};
-    pipeline_link_options.maxTraceDepth            = 2;
+    pipeline_link_options.maxTraceDepth            = 31;
     pipeline_link_options.debugLevel               = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
 
     char   log[2048];
