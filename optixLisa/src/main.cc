@@ -1,13 +1,13 @@
 #include <iostream>
 #include "optix_wrapper.hh"
 #include "display.hh"
-#include "data.hh"
 #include "scene_parser.hh"
 
 int main(int argc, char** argv) {
 
+  const int samples_per_launch = 16;
   int width, height;
-  SceneParser parser("assets/cornell_box.rto", width, height);
+  SceneParser parser("assets/cornell_box.lisa", width, height);
   const float3* vertices    = parser.vertices.data();
   const float3* normals     = parser.normals.data();
   const Material* materials = parser.materials.data();

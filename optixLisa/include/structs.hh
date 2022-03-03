@@ -15,6 +15,8 @@ enum RayType
 
 struct Material {
   float roughness;
+  float alpha;
+  float n; // refractive index
   float3 diffuse_color;
   bool emit;
   float3 emission_color;
@@ -22,16 +24,30 @@ struct Material {
 
 inline Material mk_material_emit(float3 color) {
   Material material;
-  material.emit = true;
+  material.emit           = true;
   material.emission_color = color;
+  material.alpha          = 1.0f;
   return material;
 };
 
-inline Material mk_material_diffuse(float3 color, float roughness) {
+/**
+ * @brief Smart constructor for diffuse material
+ * @param color Diffuse color
+ * @param alpha Transparency level
+ * @param param If alpha = 0, param is consider as the refractive index.
+ *              Otherwise, it is considered as the roughness value.
+ * @return Material 
+*/
+inline Material mk_material_diffuse(float3 color, float alpha, float param) {
   Material material;
-  material.emit = false;
-  material.roughness = roughness;
+  if (alpha == 0.0f)
+    material.n = param;
+  else
+    material.roughness = param;
+
+  material.alpha         = alpha;
   material.diffuse_color = color;
+  material.emit          = false;
   return material;
 };
 

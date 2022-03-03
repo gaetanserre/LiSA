@@ -385,22 +385,24 @@ namespace optix_wrapper {
     HitGroupRecord hitgroup_records[RAY_TYPE_COUNT * num_materials];
     for( int i = 0; i < num_materials; ++i )
     {
-        {
-            const int sbt_idx = i * RAY_TYPE_COUNT + 0;  // SBT for radiance ray-type for ith material
+      {
+        const int sbt_idx = i * RAY_TYPE_COUNT + 0;  // SBT for radiance ray-type for ith material
 
-            OPTIX_CHECK(optixSbtRecordPackHeader(state.radiance_hit_group, &hitgroup_records[sbt_idx]));
-            hitgroup_records[sbt_idx].data.material = materials[i];
-            hitgroup_records[sbt_idx].data.vertices = reinterpret_cast<float3*>(state.d_vertices);
-            hitgroup_records[sbt_idx].data.normals  = reinterpret_cast<float3*>(state.d_normals);
-        }
+        OPTIX_CHECK(optixSbtRecordPackHeader(state.radiance_hit_group, &hitgroup_records[sbt_idx]));
+        hitgroup_records[sbt_idx].data.material = materials[i];
+        hitgroup_records[sbt_idx].data.vertices = reinterpret_cast<float3*>(state.d_vertices);
+        hitgroup_records[sbt_idx].data.normals  = reinterpret_cast<float3*>(state.d_normals);
+      }
 
-        {
-            const int sbt_idx = i * RAY_TYPE_COUNT + 1;  // SBT for occlusion ray-type for ith material
-            hitgroup_records[sbt_idx].data.material = materials[i];
-            //memset(&hitgroup_records[sbt_idx], 0, hitgroup_record_size);
+      {
+        const int sbt_idx = i * RAY_TYPE_COUNT + 1;  // SBT for occlusion ray-type for ith material
 
-            OPTIX_CHECK(optixSbtRecordPackHeader(state.occlusion_hit_group, &hitgroup_records[sbt_idx]));
-        }
+        OPTIX_CHECK(optixSbtRecordPackHeader(state.occlusion_hit_group, &hitgroup_records[sbt_idx]));
+        hitgroup_records[sbt_idx].data.material = materials[i];
+        hitgroup_records[sbt_idx].data.vertices = reinterpret_cast<float3*>(state.d_vertices);
+        hitgroup_records[sbt_idx].data.normals  = reinterpret_cast<float3*>(state.d_normals);
+
+      }
     }
 
     CUDA_CHECK( cudaMemcpy(
