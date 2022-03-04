@@ -192,7 +192,7 @@ extern "C" __global__ void __miss__occlusion() {
 extern "C" __global__ void __closesthit__occlusion() {
   const HitGroupData* rt_data = reinterpret_cast<HitGroupData*>(optixGetSbtDataPointer());
 
-  if (rt_data->material.alpha == 0.0f) {
+  if (rt_data->material.alpha < 1.0f) {
     float3 ray_dir          = optixGetWorldRayDirection();
     const float3 ray_origin = optixGetWorldRayOrigin() + optixGetRayTmax() * optixGetWorldRayDirection();
     const float3 normal     = get_barycentric_normal(ray_origin, rt_data);
@@ -248,7 +248,7 @@ extern "C" __global__ void __closesthit__radiance() {
 
     if (rt_data->material.alpha < 1.0f) {
       pstate->direction        = get_refract_dir(ray_dir, pstate->normal, rt_data->material.n);
-      pstate->need_reflection_ray = dot(-ray_dir, pstate->normal) > 0;
+      pstate->need_reflection_ray = false;//dot(-ray_dir, pstate->normal) > 0;
     } else {
       pstate->mask_color *= rt_data->material.diffuse_color;
       pstate->accum_color += shoot_ray_to_light(pstate) * pstate->mask_color;
