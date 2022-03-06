@@ -74,7 +74,7 @@ extern "C" __device__ float3 barycentric_normal(const float3 &hit_point,
   const float v = (d11 * d20 - d01 * d21) / denom;
   const float u = 1 - v - w;
 
-  return u*n1 + v*n2 + w*n3;
+  return normalize(u*n1 + v*n2 + w*n3);
 }
 
 extern "C" __device__ float3 get_barycentric_normal(const float3 &hit_point, const HitGroupData* rt_data) {
