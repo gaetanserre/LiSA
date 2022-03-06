@@ -28,7 +28,7 @@ extern "C" {
 __constant__ Params params;
 }
 
-struct PixelState
+struct RayState
 {
   Material material;
   float3 normal;
@@ -42,10 +42,10 @@ struct PixelState
   unsigned int seed;
 };
 
-static __forceinline__ __device__ PixelState* get_pstate() {
+static __forceinline__ __device__ RayState* get_ray_state() {
     const unsigned int u0 = optixGetPayload_0();
     const unsigned int u1 = optixGetPayload_1();
-    return reinterpret_cast<PixelState*>(unpackPointer(u0, u1));
+    return reinterpret_cast<RayState*>(unpackPointer(u0, u1));
 }
 
 
@@ -56,7 +56,7 @@ static __forceinline__ __device__ void trace_occlusion(OptixTraversableHandle ha
                                                       float3 ray_direction,
                                                       float  tmin,
                                                       float  tmax,
-                                                      PixelState* inter)
+                                                      RayState* inter)
 {
     unsigned int u0, u1;
     packPointer(inter, u0, u1);
@@ -80,7 +80,7 @@ static __forceinline__ __device__ void trace_radiance(OptixTraversableHandle han
                                                       float3 ray_direction,
                                                       float  tmin,
                                                       float  tmax,
-                                                      PixelState* inter)
+                                                      RayState* inter)
 {
     unsigned int u0, u1;
     packPointer(inter, u0, u1);
@@ -104,25 +104,25 @@ extern "C" __device__ float3 trace(float3 ray_origin,
                                    unsigned int &seed)
 {
 
-  PixelState pstate;
-  pstate.seed = seed;
+  RayState ray_state;
+  ray_state.seed = seed;
 
   for (int i = 0; i < bounces; i++) {
-    if (pstate.done) break;
+    if (ray_state.done) break;
 
     trace_radiance(params.handle,
                 ray_origin,
                 ray_direction,
                 1e-6f,
                 1e16f,
-                &pstate);
+                &ray_state);
     
 
-    if (pstate.need_reflection_ray) {
-      const float fresnel_factor  = fresnel(-ray_direction, pstate.normal, pstate.material.n);
-      const float3 reflection_dir = reflect(ray_direction, pstate.normal);
-      Material original = pstate.material;
-      PixelState pstate_reflection;
+    if (ray_state.need_reflection_ray) {
+      const float fresnel_factor  = fresnel(-ray_direction, ray_state.normal, ray_state.material.n);
+      const float3 reflection_dir = reflect(ray_direction, ray_state.normal);
+      Material original = ray_state.material;
+      RayState pstate_reflection;
       pstate_reflection.seed = seed;
       trace_radiance(params.handle,
                   ray_origin,
@@ -130,16 +130,16 @@ extern "C" __device__ float3 trace(float3 ray_origin,
                   1e-6f,
                   1e16f,
                   &pstate_reflection);
-      pstate.accum_color = (fresnel_factor * pstate_reflection.accum_color
-                            + (1 - fresnel_factor) * pstate.accum_color * (1 - original.alpha))
+      ray_state.accum_color = (fresnel_factor * pstate_reflection.accum_color
+                            + (1 - fresnel_factor) * ray_state.accum_color * (1 - original.alpha))
                            * original.diffuse_color;
-      pstate.need_reflection_ray = false;
+      ray_state.need_reflection_ray = false;
     }
 
-    ray_direction = pstate.direction;
-    ray_origin    = pstate.xyz;
+    ray_direction = ray_state.direction;
+    ray_origin    = ray_state.xyz;
   }
-  return pstate.accum_color;
+  return ray_state.accum_color;
 }
 
 extern "C" __global__ void __raygen__rg() {
@@ -185,8 +185,8 @@ extern "C" __global__ void __raygen__rg() {
 /**** OCCLUSION ****/
 
 extern "C" __global__ void __miss__occlusion() {
-  PixelState* pstate = get_pstate();
-  pstate->hit = false;
+  RayState* ray_state = get_ray_state();
+  ray_state->hit = false;
 }
 
 extern "C" __global__ void __closesthit__occlusion() {
@@ -198,12 +198,12 @@ extern "C" __global__ void __closesthit__occlusion() {
     const float3 normal     = get_barycentric_normal(ray_origin, rt_data);
     ray_dir                 = get_refract_dir(ray_dir, normal, rt_data->material.n);
 
-    PixelState* pstate = get_pstate();
-    trace_occlusion(params.handle, ray_origin, ray_dir, 1e-6f, 1e16f, pstate);
+    RayState* ray_state = get_ray_state();
+    trace_occlusion(params.handle, ray_origin, ray_dir, 1e-6f, 1e16f, ray_state);
   } else if (rt_data->material.emit) {
-    PixelState* pstate = get_pstate();
-    pstate->material = rt_data->material;
-    pstate->hit = true;
+    RayState* ray_state = get_ray_state();
+    ray_state->material = rt_data->material;
+    ray_state->hit = true;
   }
 }
 
@@ -212,21 +212,21 @@ extern "C" __global__ void __closesthit__occlusion() {
 
 extern "C" __global__ void __miss__radiance() {
   MissData* rt_data  = reinterpret_cast<MissData*>(optixGetSbtDataPointer());
-  PixelState* pstate = get_pstate();
+  RayState* ray_state = get_ray_state();
 
-  pstate->done        = true;
-  pstate->accum_color += make_float3(rt_data->bg_color) * pstate->mask_color;
+  ray_state->done        = true;
+  ray_state->accum_color += make_float3(rt_data->bg_color) * ray_state->mask_color;
 }
 
-extern "C" __device__ float3 shoot_ray_to_light(PixelState* pstate) {
+extern "C" __device__ float3 shoot_ray_to_light(RayState* ray_state) {
   const unsigned int count = 10u;
   for (int i = 0; i < count; i++) {
-    float3 dir = shoot_ray_hemisphere(pstate->normal, pstate->seed);
-    trace_occlusion(params.handle, pstate->xyz, dir, 1e-6f, 1e16f, pstate);
+    float3 dir = shoot_ray_hemisphere(ray_state->normal, ray_state->seed);
+    trace_occlusion(params.handle, ray_state->xyz, dir, 1e-6f, 1e16f, ray_state);
 
-    if (pstate->hit) {
-      const float d = clamp(dot(pstate->normal, dir), 0.0f, 1.0f);
-      return d * pstate->material.emission_color;
+    if (ray_state->hit) {
+      const float d = clamp(dot(ray_state->normal, dir), 0.0f, 1.0f);
+      return d * ray_state->material.emission_color;
     }
   }
   return make_float3(0.0f);
@@ -235,26 +235,25 @@ extern "C" __device__ float3 shoot_ray_to_light(PixelState* pstate) {
 extern "C" __global__ void __closesthit__radiance() {
 
   HitGroupData* rt_data = reinterpret_cast<HitGroupData*>(optixGetSbtDataPointer());
-  PixelState* pstate = get_pstate();
+  RayState* ray_state = get_ray_state();
   
   if (rt_data->material.emit) {
-    pstate->accum_color += rt_data->material.emission_color * pstate->mask_color;
-    pstate->material    = rt_data->material;
-    pstate->done        = true;
+    ray_state->accum_color += rt_data->material.emission_color * ray_state->mask_color;
+    ray_state->done        = true;
   } else {
     const float3 ray_dir = optixGetWorldRayDirection();
-    pstate->xyz          = optixGetWorldRayOrigin() + optixGetRayTmax() * ray_dir;
-    pstate->normal       = get_barycentric_normal(pstate->xyz, rt_data);
+    ray_state->xyz          = optixGetWorldRayOrigin() + optixGetRayTmax() * ray_dir;
+    ray_state->normal       = get_barycentric_normal(ray_state->xyz, rt_data);
 
     if (rt_data->material.alpha < 1.0f) {
-      pstate->direction        = get_refract_dir(ray_dir, pstate->normal, rt_data->material.n);
-      pstate->need_reflection_ray = false;//dot(-ray_dir, pstate->normal) > 0;
+      ray_state->direction        = get_refract_dir(ray_dir, ray_state->normal, rt_data->material.n);
+      ray_state->need_reflection_ray = false;//dot(-ray_dir, ray_state->normal) > 0;
     } else {
-      pstate->mask_color *= rt_data->material.diffuse_color;
-      pstate->accum_color += shoot_ray_to_light(pstate) * pstate->mask_color;
+      ray_state->mask_color *= rt_data->material.diffuse_color;
+      ray_state->accum_color += shoot_ray_to_light(ray_state) * ray_state->mask_color;
 
-      pstate->direction = lerp(reflect(ray_dir, pstate->normal),
-                               shoot_ray_hemisphere(pstate->normal, pstate->seed),
+      ray_state->direction = lerp(reflect(ray_dir, ray_state->normal),
+                               shoot_ray_hemisphere(ray_state->normal, ray_state->seed),
                                rt_data->material.roughness);  
     }
   }
