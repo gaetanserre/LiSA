@@ -1,6 +1,6 @@
 # LiSA
 
-LiSA is a path tracing rendering engine developped in C++ using CUDA 11 and GLM.
+LiSA is a path tracing render engine developped in C++ using CUDA 11 and GLM.
 
 LiSA runs in multiple CUDA threads and uses the Monte-Carlo rendering technique.
 
