@@ -16,6 +16,11 @@ extern "C" __device__ float3 shoot_ray_hemisphere(const float3 &normal, unsigned
   return faceforward(random_dir, normal, random_dir);
 }
 
+extern "C" __device__ float fresnel (const float cosT, const float &n) {
+  const float R0 = pow((1 - n) / (1 + n), 2);
+  return R0 + (1 - R0) * pow (1-cosT, 5);
+}
+
 extern "C" __device__ float3 get_refract_dir(const float3 &ray_dir,
                                              const float3 &normal_,
                                              const float  &n_1)
@@ -44,12 +49,6 @@ extern "C" __device__ float3 get_refract_dir(const float3 &ray_dir,
   if(cosT*cosT < 0.0)//tot inner refl
     return reflect(ray_dir, normal);
   return n * ray_dir + (n * cosI - cosT) * normal;
-}
-
-extern "C" __device__ float fresnel (const float3 &ray_dir, const float3 &normal, const float &n) {
-  const float cost = dot(ray_dir, normal);
-  const float R0 = pow((1 - n) / (1 + n), 2);
-  return R0 + (1 - R0) * pow (1-cost, 5);
 }
 
 

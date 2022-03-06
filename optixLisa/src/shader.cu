@@ -43,9 +43,9 @@ struct RayState
 };
 
 static __forceinline__ __device__ RayState* get_ray_state() {
-    const unsigned int u0 = optixGetPayload_0();
-    const unsigned int u1 = optixGetPayload_1();
-    return reinterpret_cast<RayState*>(unpackPointer(u0, u1));
+  const unsigned int u0 = optixGetPayload_0();
+  const unsigned int u1 = optixGetPayload_1();
+  return reinterpret_cast<RayState*>(unpackPointer(u0, u1));
 }
 
 
@@ -58,20 +58,20 @@ static __forceinline__ __device__ void trace_occlusion(OptixTraversableHandle ha
                                                       float  tmax,
                                                       RayState* inter)
 {
-    unsigned int u0, u1;
-    packPointer(inter, u0, u1);
-    optixTrace(handle,
-              ray_origin,
-              ray_direction,
-              tmin,
-              tmax,
-              0.0f,                    // rayTime
-              OptixVisibilityMask(1),
-              OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
-              RAY_TYPE_OCCLUSION,      // SBT offset
-              RAY_TYPE_COUNT,          // SBT stride
-              RAY_TYPE_OCCLUSION,      // missSBTIndex
-              u0, u1);
+  unsigned int u0, u1;
+  packPointer(inter, u0, u1);
+  optixTrace(handle,
+            ray_origin,
+            ray_direction,
+            tmin,
+            tmax,
+            0.0f,                    // rayTime
+            OptixVisibilityMask(1),
+            OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
+            RAY_TYPE_OCCLUSION,      // SBT offset
+            RAY_TYPE_COUNT,          // SBT stride
+            RAY_TYPE_OCCLUSION,      // missSBTIndex
+            u0, u1);
 }
 
 
@@ -82,20 +82,20 @@ static __forceinline__ __device__ void trace_radiance(OptixTraversableHandle han
                                                       float  tmax,
                                                       RayState* inter)
 {
-    unsigned int u0, u1;
-    packPointer(inter, u0, u1);
-    optixTrace(handle,
-              ray_origin,
-              ray_direction,
-              tmin,
-              tmax,
-              0.0f,                // rayTime
-              OptixVisibilityMask(1),
-              OPTIX_RAY_FLAG_NONE,
-              RAY_TYPE_RADIANCE,        // SBT offset
-              RAY_TYPE_COUNT,           // SBT stride
-              RAY_TYPE_RADIANCE,        // missSBTIndex
-              u0, u1);
+  unsigned int u0, u1;
+  packPointer(inter, u0, u1);
+  optixTrace(handle,
+            ray_origin,
+            ray_direction,
+            tmin,
+            tmax,
+            0.0f,                // rayTime
+            OptixVisibilityMask(1),
+            OPTIX_RAY_FLAG_NONE,
+            RAY_TYPE_RADIANCE,        // SBT offset
+            RAY_TYPE_COUNT,           // SBT stride
+            RAY_TYPE_RADIANCE,        // missSBTIndex
+            u0, u1);
 }
 
 extern "C" __device__ float3 trace(float3 ray_origin,
@@ -119,7 +119,7 @@ extern "C" __device__ float3 trace(float3 ray_origin,
     
 
     if (ray_state.need_reflection_ray) {
-      const float fresnel_factor  = fresnel(-ray_direction, ray_state.normal, ray_state.material.n);
+/*       const float fresnel_factor  = fresnel(-ray_direction, ray_state.normal, ray_state.material.n);
       const float3 reflection_dir = reflect(ray_direction, ray_state.normal);
       Material original = ray_state.material;
       RayState pstate_reflection;
@@ -133,7 +133,7 @@ extern "C" __device__ float3 trace(float3 ray_origin,
       ray_state.accum_color = (fresnel_factor * pstate_reflection.accum_color
                             + (1 - fresnel_factor) * ray_state.accum_color * (1 - original.alpha))
                            * original.diffuse_color;
-      ray_state.need_reflection_ray = false;
+      ray_state.need_reflection_ray = false; */
     }
 
     ray_direction = ray_state.direction;
@@ -191,6 +191,7 @@ extern "C" __global__ void __miss__occlusion() {
 
 extern "C" __global__ void __closesthit__occlusion() {
   const HitGroupData* rt_data = reinterpret_cast<HitGroupData*>(optixGetSbtDataPointer());
+  RayState* ray_state = get_ray_state();
 
   if (rt_data->material.alpha < 1.0f) {
     float3 ray_dir          = optixGetWorldRayDirection();
@@ -198,10 +199,8 @@ extern "C" __global__ void __closesthit__occlusion() {
     const float3 normal     = get_barycentric_normal(ray_origin, rt_data);
     ray_dir                 = get_refract_dir(ray_dir, normal, rt_data->material.n);
 
-    RayState* ray_state = get_ray_state();
     trace_occlusion(params.handle, ray_origin, ray_dir, 1e-6f, 1e16f, ray_state);
   } else if (rt_data->material.emit) {
-    RayState* ray_state = get_ray_state();
     ray_state->material = rt_data->material;
     ray_state->hit = true;
   }
@@ -246,7 +245,9 @@ extern "C" __global__ void __closesthit__radiance() {
     ray_state->normal       = get_barycentric_normal(ray_state->xyz, rt_data);
 
     if (rt_data->material.alpha < 1.0f) {
-      ray_state->direction        = get_refract_dir(ray_dir, ray_state->normal, rt_data->material.n);
+      ray_state->direction           = get_refract_dir(ray_dir,
+                                                      ray_state->normal,
+                                                      rt_data->material.n);
       ray_state->need_reflection_ray = false;//dot(-ray_dir, ray_state->normal) > 0;
     } else {
       ray_state->mask_color *= rt_data->material.diffuse_color;
