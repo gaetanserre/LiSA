@@ -26,7 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-file (GLOB_RECURSE SRC_FILES src/*.cc src/*cu)
+file (GLOB_RECURSE SRC_FILES src/*.cc src/*.cu)
 
 include_directories("include")
 

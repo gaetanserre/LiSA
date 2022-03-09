@@ -1,29 +1,28 @@
-#include <optix.h>
-
 #include "structs.hh"
 #include "random.h"
 
 #include <sutil/vec_math.h>
 
 
-extern "C" __device__ float rng(unsigned int &seed) {
+static __forceinline__ __device__ float rng(unsigned int &seed) {
   return rnd(seed) * 2.0f - 1.0f;
 }
 
-extern "C" __device__ float3 shoot_ray_hemisphere(const float3 &normal, unsigned int &seed) {
+static __forceinline__ __device__ float3 shoot_ray_hemisphere(const float3 &normal,
+                                                              unsigned int &seed)
+{
   float3 random_dir = normalize(make_float3(rng(seed), rng(seed), rng(seed)));
-  
   return faceforward(random_dir, normal, random_dir);
 }
 
-extern "C" __device__ float fresnel (const float cosT, const float &n) {
+static __forceinline__ __device__ float fresnel (const float cosT, const float &n) {
   const float R0 = pow((1 - n) / (1 + n), 2);
   return R0 + (1 - R0) * pow (1-cosT, 5);
 }
 
-extern "C" __device__ float3 get_refract_dir(const float3 &ray_dir,
-                                             const float3 &normal_,
-                                             const float  &n_1)
+static __forceinline__ __device__ float3 get_refract_dir(const float3 &ray_dir,
+                                                         const float3 &normal_,
+                                                         const float  &n_1)
 {
   double n1, n2, n;
   double cosI = dot(ray_dir,normal_);
@@ -52,13 +51,13 @@ extern "C" __device__ float3 get_refract_dir(const float3 &ray_dir,
 }
 
 
-extern "C" __device__ float3 barycentric_normal(const float3 &hit_point,
-                                                const float3 &n1,
-                                                const float3 &n2,
-                                                const float3 &n3,
-                                                const float3 &v1,
-                                                const float3 &v2,
-                                                const float3 &v3)
+static __forceinline__ __device__ float3 barycentric_normal(const float3 &hit_point,
+                                                            const float3 &n1,
+                                                            const float3 &n2,
+                                                            const float3 &n3,
+                                                            const float3 &v1,
+                                                            const float3 &v2,
+                                                            const float3 &v3)
 {
   const float3 edge1 = v2 - v1;
   const float3 edge2 = v3 - v1;
@@ -74,10 +73,12 @@ extern "C" __device__ float3 barycentric_normal(const float3 &hit_point,
   const float v = (d11 * d20 - d01 * d21) / denom;
   const float u = 1 - v - w;
 
-  return u*n1 + v*n2 + w*n3;
+  return normalize(u*n1 + v*n2 + w*n3);
 }
 
-extern "C" __device__ float3 get_barycentric_normal(const float3 &hit_point, const HitGroupData* rt_data) {
+static __forceinline__ __device__ float3 get_barycentric_normal(const float3 &hit_point,
+                                                                const HitGroupData* rt_data)
+{
   const int    prim_idx        = optixGetPrimitiveIndex();
   const int    vert_idx_offset = prim_idx*3;
 
