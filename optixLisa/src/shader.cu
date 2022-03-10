@@ -194,7 +194,7 @@ static __forceinline__ __device__ float3 shoot_ray_to_light(RayState* ray_state,
 {
   const unsigned int count = 10u;
   for (int i = 0; i < count; i++) {
-    float3 dir = BRDF(ray_state->normal, *(ray_state->seed), material);
+    float3 dir = BRDF(ray_state->direction, ray_state->normal, *(ray_state->seed), material);
     trace_occlusion(params.handle, ray_state->xyz, dir, 1e-6f, 1e16f, ray_state);
 
     if (ray_state->hit) {
@@ -214,6 +214,7 @@ extern "C" __global__ void __closesthit__radiance() {
     ray_state->done   = true;
   } else {
     const float3 ray_dir = optixGetWorldRayDirection();
+    ray_state->direction = ray_dir;
     ray_state->xyz       = optixGetWorldRayOrigin() + optixGetRayTmax() * ray_dir;
     ray_state->normal    = get_barycentric_normal(ray_state->xyz, rt_data);
     if (rt_data->material.alpha < 1.0f) {
@@ -222,7 +223,7 @@ extern "C" __global__ void __closesthit__radiance() {
       ray_state->attenuation *= rt_data->material.diffuse_color;
 
       ray_state->color    += shoot_ray_to_light(ray_state, rt_data->material) * ray_state->attenuation;
-      ray_state->direction = BRDF(ray_state->normal, *(ray_state->seed), rt_data->material);
+      ray_state->direction = BRDF(ray_state->direction, ray_state->normal, *(ray_state->seed), rt_data->material);
     }
   }
 }

@@ -13,11 +13,12 @@ static __forceinline__ __device__ float weight(const float3 &N,
   return NdotL* sampleProb;
 }
 
-static __forceinline__ __device__ float3 BRDF(const float3 &N,
+static __forceinline__ __device__ float3 BRDF(const float3 &ray_dir,
+                                              const float3 &N,
                                               unsigned int &seed,
                                               const Material &mat)
 {
-  return shoot_ray_hemisphere(N, seed);
+  return lerp(reflect(ray_dir, N), shoot_ray_hemisphere(N, seed), mat.roughness);
 }
 
 static __forceinline__ __device__ float3 BTDF(const float3 &ray_dir,
