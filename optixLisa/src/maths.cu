@@ -14,41 +14,36 @@ static __forceinline__ __device__ float3 shoot_ray_hemisphere(const float3 &norm
   return faceforward(random_dir, normal, random_dir);
 }
 
-static __forceinline__ __device__ float fresnel (const float cosT, const float &n) {
-  const float R0 = pow((1 - n) / (1 + n), 2);
-  const float res = R0 + (1 - R0) * pow (1-cosT, 5);
-  return res;
+static __forceinline__ __device__ float fresnel (const float cosT, const float &eta) {
+  const float R0 = pow((1 - eta) / (1 + eta), 2);
+  return R0 + (1 - R0) * pow (1-cosT, 5);
 }
 
 static __forceinline__ __device__ float3 get_refract_dir(const float3 &ray_dir,
                                                          const float3 &normal_,
-                                                         const float  &n_1)
+                                                         const float  &n,
+                                                         unsigned int &seed)
 {
-  double n1, n2, n;
+  double n1, n2, eta;
   double cosI = dot(ray_dir, normal_);
   float3 normal = normal_;
-  if(cosI > 0.0)
-  {
-      n1 = n_1;
+  if(cosI > 0.0) {
+      n1 = n;
       n2 = 1.0f;
       normal = -normal_;//invert
-  }
-  else
-  {
+  } else {
       n1 = 1.0f;
-      n2 = n_1;
+      n2 = n;
       cosI = -cosI;
   }
-  n = n1/n2;
-  const double sinT2 = n*n * (1.0 - cosI * cosI);
+  eta = n1/n2;
+  const double sinT2 = eta*eta * (1.0 - cosI * cosI);
   const double cosT = sqrt(1.0 - sinT2);
 
-  const float f = fresnel(cosI, n);
-
-  if (f > 0.5) {
+  if (rnd(seed) <= fresnel(cosI, eta)) {
     return reflect(ray_dir, normal);
   } else {
-    return n * ray_dir + (n * cosI - cosT) * normal;
+    return eta * ray_dir + (eta * cosI - cosT) * normal;
   }
 }
 

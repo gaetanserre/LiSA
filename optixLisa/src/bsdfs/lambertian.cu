@@ -26,5 +26,5 @@ static __forceinline__ __device__ float3 BTDF(const float3 &ray_dir,
                                               unsigned int &seed,
                                               const Material &mat)
 {
-  return get_refract_dir(ray_dir, N, mat.n);
+  return get_refract_dir(ray_dir, N, mat.n, seed);
 }
