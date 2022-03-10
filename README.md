@@ -7,5 +7,5 @@
 - [ ] Scene file/sample/bounce selection
 - [ ] Generalizable shader
   - [x] BDRF
-  - [ ] BTDF
+  - [x] BTDF
   - [ ] More light when more triangles?

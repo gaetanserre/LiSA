@@ -19,3 +19,11 @@ static __forceinline__ __device__ float3 BRDF(const float3 &N,
 {
   return shoot_ray_hemisphere(N, seed);
 }
+
+static __forceinline__ __device__ float3 BTDF(const float3 &ray_dir,
+                                              const float3 &N,
+                                              unsigned int &seed,
+                                              const Material &mat)
+{
+  return get_refract_dir(ray_dir, N, mat.n);
+}

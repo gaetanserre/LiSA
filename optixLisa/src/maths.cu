@@ -3,7 +3,6 @@
 
 #include <sutil/vec_math.h>
 
-
 static __forceinline__ __device__ float rng(unsigned int &seed) {
   return rnd(seed) * 2.0f - 1.0f;
 }
@@ -17,7 +16,8 @@ static __forceinline__ __device__ float3 shoot_ray_hemisphere(const float3 &norm
 
 static __forceinline__ __device__ float fresnel (const float cosT, const float &n) {
   const float R0 = pow((1 - n) / (1 + n), 2);
-  return R0 + (1 - R0) * pow (1-cosT, 5);
+  const float res = R0 + (1 - R0) * pow (1-cosT, 5);
+  return res;
 }
 
 static __forceinline__ __device__ float3 get_refract_dir(const float3 &ray_dir,
@@ -25,7 +25,7 @@ static __forceinline__ __device__ float3 get_refract_dir(const float3 &ray_dir,
                                                          const float  &n_1)
 {
   double n1, n2, n;
-  double cosI = dot(ray_dir,normal_);
+  double cosI = dot(ray_dir, normal_);
   float3 normal = normal_;
   if(cosI > 0.0)
   {
@@ -40,14 +40,16 @@ static __forceinline__ __device__ float3 get_refract_dir(const float3 &ray_dir,
       cosI = -cosI;
   }
   n = n1/n2;
-  double sinT2 = n*n * (1.0 - cosI * cosI);
-  double cosT = sqrt(1.0 - sinT2);
+  const double sinT2 = n*n * (1.0 - cosI * cosI);
+  const double cosT = sqrt(1.0 - sinT2);
 
-  if(n == 1.0)
-    return ray_dir;
-  if(cosT*cosT < 0.0)//tot inner refl
+  const float f = fresnel(cosI, n);
+
+  if (f > 0.5) {
     return reflect(ray_dir, normal);
-  return n * ray_dir + (n * cosI - cosT) * normal;
+  } else {
+    return n * ray_dir + (n * cosI - cosT) * normal;
+  }
 }
 
 

@@ -1,7 +1,7 @@
 #include <optix.h>
 
 #include "structs.hh"
-#include "brdfs/lambertian.cu"
+#include "bsdfs/lambertian.cu"
 
 #include <sutil/vec_math.h>
 #include <cuda/helpers.h>
@@ -136,7 +136,7 @@ extern "C" __global__ void __raygen__rg() {
   unsigned int seed        = tea<4>(idx.y*size.x + idx.x, subframe_index);
 
   const int samples_per_launch = params.samples_per_launch;
-  const int nb_bounces = 5;
+  const int nb_bounces = 7;
 
   float3 accum_color = make_float3(0.0f);
 
@@ -213,12 +213,16 @@ extern "C" __global__ void __closesthit__radiance() {
     ray_state->color += rt_data->material.emission_color * ray_state->attenuation;
     ray_state->done   = true;
   } else {
-    ray_state->attenuation *= rt_data->material.diffuse_color;
     const float3 ray_dir = optixGetWorldRayDirection();
     ray_state->xyz       = optixGetWorldRayOrigin() + optixGetRayTmax() * ray_dir;
     ray_state->normal    = get_barycentric_normal(ray_state->xyz, rt_data);
+    if (rt_data->material.alpha < 1.0f) {
+      ray_state->direction = BTDF(ray_dir, ray_state->normal, *(ray_state->seed), rt_data->material);
+    } else {
+      ray_state->attenuation *= rt_data->material.diffuse_color;
 
-    ray_state->color  += shoot_ray_to_light(ray_state, rt_data->material) * ray_state->attenuation;
-    ray_state->direction = BRDF(ray_state->normal, *(ray_state->seed), rt_data->material);
+      ray_state->color    += shoot_ray_to_light(ray_state, rt_data->material) * ray_state->attenuation;
+      ray_state->direction = BRDF(ray_state->normal, *(ray_state->seed), rt_data->material);
+    }
   }
 }
