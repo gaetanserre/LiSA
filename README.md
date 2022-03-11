@@ -4,9 +4,10 @@
 - [ ] Pointer to Materials (avoid copy it twice)
 - [x] Tabulation size in scene_builder.{cc, hh}n
 - [x] Scene file extension
-- [ ] Run args
-- [ ] Save image
-- [ ] Scene file/sample/bounce selection
+- [x] Run arg
+- [x] Save image
+- [x] Scene file/sample/bounce selection
+- [ ] More example scenes
 - [ ] Focal plane
 - [ ] Generalizable shader
   - [x] BDRF
