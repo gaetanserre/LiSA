@@ -40,7 +40,9 @@ static __forceinline__ __device__ float3 get_refract_dir(const float3 &ray_dir,
   const double sinT2 = eta*eta * (1.0 - cosI * cosI);
   const double cosT = sqrt(1.0 - sinT2);
 
-  if (rnd(seed) <= fresnel(cosI, eta)) {
+  if (eta == 1.0f) {
+    return ray_dir;
+  } else if (rnd(seed) <= fresnel(cosI, eta)) {
     return reflect(ray_dir, normal);
   } else {
     return eta * ray_dir + (eta * cosI - cosT) * normal;
