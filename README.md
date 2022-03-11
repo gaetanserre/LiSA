@@ -12,3 +12,4 @@
   - [x] BDRF
   - [x] BTDF
   - [ ] More light when more triangles?
+  - [ ] Refractive index of "out" material
