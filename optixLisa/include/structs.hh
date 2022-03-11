@@ -55,16 +55,16 @@ struct Camera {
   float3 eye;
   float3 look_at;
   float fov;
-  float2 focal_plane; //focal_plane.x is the focal plane, if focal_plane.y = 0, focal plane is not used
 };
 
-struct Params {
+struct OptixParams {
     unsigned int subframe_index;
     float4*      accum_buffer;
     uchar4*      frame_buffer;
     unsigned int width;
     unsigned int height;
     unsigned int samples_per_launch;
+    unsigned int num_bounces;
 
     float3       eye;
     float3       U;
@@ -72,6 +72,34 @@ struct Params {
     float3       W;
 
     OptixTraversableHandle handle;
+};
+
+struct MissData {
+  float4 bg_color;
+};
+
+
+struct HitGroupData {
+  Material material;
+  float3* vertices;
+  float3* normals;
+};
+
+struct RayGenData {};
+
+struct RendererParams {
+  const float3* vertices;
+  const float3* normals;
+  const Material* materials;
+  const int* mat_indices;
+  int num_vertices;
+  int num_materials;
+
+  unsigned int width, height;
+  Camera camera;
+  unsigned int num_samples;
+  unsigned int num_bounces;
+  const char* output_image;
 };
 
 struct RendererState {
@@ -93,25 +121,11 @@ struct RendererState {
   OptixProgramGroup radiance_hit_group   = 0;
   OptixProgramGroup occlusion_hit_group  = 0;
 
+  CUdeviceptr d_materials     = 0;
   OptixShaderBindingTable sbt = {};
 
-  Params  params;
-  Params* d_params;
+  OptixParams  params;
+  OptixParams* d_params;
 };
-
-
-struct MissData {
-  float4 bg_color;
-};
-
-
-struct HitGroupData {
-  Material material;
-  float3* vertices;
-  float3* normals;
-};
-
-struct RayGenData {};
-
 
 #endif // STRUCTS_HH

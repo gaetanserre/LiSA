@@ -1,5 +1,25 @@
 #include "structs.hh"
 
+class OptixWrapper {
+  public:
+    OptixWrapper(const RendererParams &params);
+    ~OptixWrapper();
+    RendererState* get_pstate() { return &(this->state); }
+  private:
+    void init_optix();
+    void create_mesh_handler();
+    void create_module();
+    void create_programs();
+    void create_pipeline();
+    void create_shaders_binding_table();
+    void init_params();
+    void clean_state();
+
+    RendererParams params;
+    RendererState state;
+};
+
+
 namespace optix_wrapper {
   void init_optix(RendererState &state);
 
@@ -20,7 +40,7 @@ namespace optix_wrapper {
                                     const Material* materials,
                                     const int num_materials);
 
-  void init_params(RendererState & state,
+  void init_params(RendererState &state,
                    int samples_per_launch,
                    int width,
                    int height,

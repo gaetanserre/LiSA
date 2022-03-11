@@ -24,7 +24,7 @@ static __forceinline__ __device__ void  packPointer( void* ptr, unsigned int& i0
 /***** SHADER *****/
 
 extern "C" {
-__constant__ Params params;
+__constant__ OptixParams params;
 }
 
 struct RayState
@@ -136,7 +136,7 @@ extern "C" __global__ void __raygen__rg() {
   unsigned int seed        = tea<4>(idx.y*size.x + idx.x, subframe_index);
 
   const int samples_per_launch = params.samples_per_launch;
-  const int nb_bounces = 7;
+  const int nb_bounces = params.num_bounces;
 
   float3 accum_color = make_float3(0.0f);
 
