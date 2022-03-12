@@ -19,34 +19,14 @@ static __forceinline__ __device__ float fresnel (const float cosT, const float &
   return R0 + (1 - R0) * pow (1-cosT, 5);
 }
 
-static __forceinline__ __device__ float3 get_refract_dir(const float3 &ray_dir,
-                                                         const float3 &normal_,
-                                                         const float  &n,
-                                                         unsigned int &seed)
+static __forceinline__ __device__ float3 refract(const float &cosI,
+                                                 const float3 &ray_dir,
+                                                 const float3 &N,
+                                                 const float &eta)
 {
-  double n1, n2, eta;
-  double cosI = dot(ray_dir, normal_);
-  float3 normal = normal_;
-  if(cosI > 0.0) {
-      n1 = n;
-      n2 = 1.0f;
-      normal = -normal_;//invert
-  } else {
-      n1 = 1.0f;
-      n2 = n;
-      cosI = -cosI;
-  }
-  eta = n1/n2;
-  const double sinT2 = eta*eta * (1.0 - cosI * cosI);
-  const double cosT = sqrt(1.0 - sinT2);
-
-  if (eta == 1.0f) {
-    return ray_dir;
-  } else if (rnd(seed) <= fresnel(cosI, eta)) {
-    return reflect(ray_dir, normal);
-  } else {
-    return eta * ray_dir + (eta * cosI - cosT) * normal;
-  }
+  float cost2 = 1.0f - eta * eta * (1.0f - cosI*cosI);
+  float3 t = eta*ray_dir + ((eta*cosI - sqrt(abs(cost2))) * N);
+  return t * (cost2 > 0);
 }
 
 

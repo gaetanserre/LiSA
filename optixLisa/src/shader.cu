@@ -193,11 +193,11 @@ static __forceinline__ __device__ float3 shoot_ray_to_light(RayState* ray_state,
 {
   const unsigned int count = 30u;
   for (int i = 0; i < count; i++) {
-    float3 dir = BRDF(ray_state->direction, ray_state->normal, *(ray_state->seed), material);
+    float3 dir = shoot_ray_hemisphere(ray_state->normal, *(ray_state->seed));
     trace_occlusion(params.handle, ray_state->xyz, dir, 1e-6f, 1e16f, ray_state);
 
     if (ray_state->hit) {
-      return ray_state->material.emission_color * weight(ray_state->normal, dir, material);
+      return ray_state->material.emission_color * BRDF(ray_state->normal, dir, material);
     }
   }
   return make_float3(0.0f);
@@ -217,12 +217,29 @@ extern "C" __global__ void __closesthit__radiance() {
     ray_state->xyz       = optixGetWorldRayOrigin() + optixGetRayTmax() * ray_dir;
     ray_state->normal    = get_barycentric_normal(ray_state->xyz, rt_data);
     if (rt_data->material.alpha < 1.0f) {
-      ray_state->direction = BTDF(ray_dir, ray_state->normal, *(ray_state->seed), rt_data->material);
+      float cosI = dot(ray_dir, ray_state->normal);
+      float eta;
+      float3 normal;
+      if (cosI < 0.0f) {
+       cosI = -cosI;
+       eta = 1 / rt_data->material.n;
+       normal = ray_state->normal;
+      } else {
+        eta = rt_data->material.n;
+        normal = -ray_state->normal;
+      }
+      if (eta == 1.0f) {
+        ray_state->direction = ray_dir;
+      } else if (rnd(*(ray_state->seed)) <= BTDF(cosI, eta)) {
+        ray_state->direction = reflect(ray_dir, normal);
+      } else {
+        ray_state->direction = refract(cosI, ray_dir, normal, eta);
+      }
     } else {
       ray_state->attenuation *= rt_data->material.diffuse_color;
 
       ray_state->color    += shoot_ray_to_light(ray_state, rt_data->material) * ray_state->attenuation;
-      ray_state->direction = BRDF(ray_state->direction, ray_state->normal, *(ray_state->seed), rt_data->material);
+      ray_state->direction = bounce(ray_state->direction, ray_state->normal, *(ray_state->seed), rt_data->material);
     }
   }
 }
