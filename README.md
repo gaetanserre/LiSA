@@ -14,3 +14,6 @@
   - [x] BTDF
   - [ ] More light when more triangles?
   - [ ] Refractive index of "out" material
+
+### Lambertian BRDF
+- [ ] Weird circles
