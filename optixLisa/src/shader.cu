@@ -99,10 +99,10 @@ static __forceinline__ __device__ void trace_radiance(OptixTraversableHandle han
 
 
 
-static __forceinline__ __device__ float3 trace(float3 ray_origin,
-                                   float3 ray_direction,
-                                   const int &bounces,
-                                   unsigned int* seed)
+static __forceinline__ __device__ float3 trace(float3 &ray_origin,
+                                               float3 &ray_direction,
+                                               const int &bounces,
+                                               unsigned int* seed)
 {
 
   RayState ray_state;
@@ -139,11 +139,10 @@ extern "C" __global__ void __raygen__rg() {
   const int nb_bounces = params.num_bounces;
 
   float3 accum_color = make_float3(0.0f);
-
   for (int i = 0; i < samples_per_launch; i++) {
     /* Builds ray direction/origin */
-    const float2 antialiasing_jitter = normalize(make_float2(rng(seed), rng(seed)));
-    const float3 d                   = make_float3((2.0f * idx2 + antialiasing_jitter) / size - 1.0f, 1.0f);
+    const float2 antialiasing_jitter = make_float2(rng(seed), rng(seed));
+    const float2 d                   = (2.0f * idx2 + antialiasing_jitter) / size - 1.0f;
     float3 ray_direction             = normalize(d.x*U + d.y*V + W);
     float3 ray_origin                = eye;
 
@@ -192,7 +191,7 @@ extern "C" __global__ void __miss__radiance() {
 static __forceinline__ __device__ float3 shoot_ray_to_light(RayState* ray_state,
                                                             const Material &material)
 {
-  const unsigned int count = 10u;
+  const unsigned int count = 30u;
   for (int i = 0; i < count; i++) {
     float3 dir = BRDF(ray_state->direction, ray_state->normal, *(ray_state->seed), material);
     trace_occlusion(params.handle, ray_state->xyz, dir, 1e-6f, 1e16f, ray_state);
