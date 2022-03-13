@@ -17,4 +17,4 @@
   - [ ] Refractive index of "out" material
 
 ### Lambertian BRDF
-- [ ] Weird circles
+- [x] Weird circles

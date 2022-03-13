@@ -31,7 +31,7 @@ struct RayState
 {
   Material material;
   float3 normal;
-  float3 xyz;
+  float3 origin;
   float3 attenuation = make_float3(1.0f);
   float3 color       = make_float3(0.0f);
   float3 direction;
@@ -111,12 +111,12 @@ static __forceinline__ __device__ float3 trace(float3 &ray_origin,
     trace_radiance(params.handle,
                 ray_origin,
                 ray_direction,
-                1e-6f,
+                1e-4f,
                 1e16f,
                 &ray_state);
 
     ray_direction = ray_state.direction;
-    ray_origin    = ray_state.xyz;
+    ray_origin    = ray_state.origin;
 
     if (ray_state.done) break;
   }
@@ -129,11 +129,16 @@ extern "C" __global__ void __raygen__rg() {
   const float3 U    = params.U;
   const float3 V    = params.V;
   const float3 W    = params.W;
+  /* printf("U1 %f U2 %f U3 %f\nV1 %f V2 %f V3 %f\nW1 %f W2 %f W3 %f\n",
+         U.x, U.y, U.z,
+         V.x, V.y, V.z,
+         W.x, W.y, W.z); */
+
   const uint3  idx  = optixGetLaunchIndex();
   const float2 idx2 = make_float2(idx.x, idx.y);
 
   const int subframe_index = params.subframe_index;
-  unsigned int seed        = tea<4>(idx.y*size.x + idx.x, subframe_index);
+  unsigned int seed        = tea<16>(idx.y*size.x + idx.x, subframe_index);
 
   const int samples_per_launch = params.samples_per_launch;
   const int nb_bounces = params.num_bounces;
@@ -194,7 +199,7 @@ static __forceinline__ __device__ float3 shoot_ray_to_light(RayState* ray_state,
   const unsigned int count = 30u;
   for (int i = 0; i < count; i++) {
     float3 dir = shoot_ray_hemisphere(ray_state->normal, *(ray_state->seed));
-    trace_occlusion(params.handle, ray_state->xyz, dir, 1e-6f, 1e16f, ray_state);
+    trace_occlusion(params.handle, ray_state->origin, dir, 1e-4f, 1e16f, ray_state);
 
     if (ray_state->hit) {
       return ray_state->material.emission_color * BRDF(ray_state->normal, dir, material);
@@ -213,9 +218,11 @@ extern "C" __global__ void __closesthit__radiance() {
     ray_state->done   = true;
   } else {
     const float3 ray_dir = optixGetWorldRayDirection();
+    ray_state->origin    = optixGetWorldRayOrigin() + optixGetRayTmax() * ray_dir;
     ray_state->direction = ray_dir;
-    ray_state->xyz       = optixGetWorldRayOrigin() + optixGetRayTmax() * ray_dir;
-    ray_state->normal    = get_barycentric_normal(ray_state->xyz, rt_data);
+    ray_state->normal    = get_barycentric_normal(ray_state->origin, rt_data);
+
+    // If transparency
     if (rt_data->material.alpha < 1.0f) {
       float cosI = dot(ray_dir, ray_state->normal);
       float eta;
@@ -235,7 +242,9 @@ extern "C" __global__ void __closesthit__radiance() {
       } else {
         ray_state->direction = refract(cosI, ray_dir, normal, eta);
       }
-    } else {
+    }
+    // If opaque
+    else {
       ray_state->attenuation *= rt_data->material.diffuse_color;
 
       ray_state->color    += shoot_ray_to_light(ray_state, rt_data->material) * ray_state->attenuation;
