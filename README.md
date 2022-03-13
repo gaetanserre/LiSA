@@ -7,7 +7,7 @@
 - [x] Run arg
 - [x] Save image
 - [x] Scene file/sample/bounce selection
-- [ ] Print time elapsed
+- [x] Print time elapsed
 - [ ] More example scenes
 - [ ] Focal plane
 - [ ] Generalizable shader

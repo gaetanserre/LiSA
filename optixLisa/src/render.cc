@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <sutil/GLDisplay.h>
+#include <iostream>
 
 void save_image(sutil::CUDAOutputBuffer<uchar4> &output_buffer, const RendererParams &params) {
   sutil::ImageBuffer buffer;
@@ -90,18 +91,19 @@ void display(RendererState &state, const RendererParams &params) {
   std::chrono::duration<double> render_time( 0.0 );
   std::chrono::duration<double> display_time( 0.0 );
 
+  auto start_time = std::chrono::system_clock::now();
   do
   {
     glfwPollEvents();
 
 
     auto t0 = std::chrono::steady_clock::now();
-    launchSubframe( output_buffer, state );
+    launchSubframe(output_buffer, state);
     auto t1 = std::chrono::steady_clock::now();
     render_time += t1 - t0;
     t0 = t1;
 
-    displaySubframe( output_buffer, gl_display, window );
+    displaySubframe(output_buffer, gl_display, window);
     t1 = std::chrono::steady_clock::now();
     display_time += t1 - t0;
 
@@ -123,6 +125,8 @@ void display(RendererState &state, const RendererParams &params) {
 
   } while( !glfwWindowShouldClose( window ) );
   CUDA_SYNC_CHECK();
+  std::chrono::duration<float> total_render_time = std::chrono::system_clock::now() - start_time;
+  printf("Render finished in %.2f mn\n", total_render_time.count() / 60.0f);
 }
 
 void render(RendererState &state, const RendererParams &params) {
@@ -130,9 +134,14 @@ void render(RendererState &state, const RendererParams &params) {
   sutil::CUDAOutputBuffer<uchar4> output_buffer(output_buffer_type,
                                               state.params.width,
                                               state.params.height);
+                                              
+  auto start_time = std::chrono::system_clock::now();
   while(state.params.subframe_index * state.params.samples_per_launch < params.num_samples) {
     launchSubframe(output_buffer, state);
     state.params.subframe_index++;
   }
   save_image(output_buffer, params);
+  CUDA_SYNC_CHECK();
+  std::chrono::duration<float> total_render_time = std::chrono::system_clock::now() - start_time;
+  printf("Render finished in %.2f mn\n", total_render_time.count() / 60.0f);
 }
