@@ -17,12 +17,12 @@ int main(int argc, char** argv) {
   RendererParams params = parser.get_params();
   OptixWrapper wrapper(params);
 
+  printf("Starting rendering...\n");
   if (cmdOptionExists(argv, argv + argc, "-d")) {
     display(*wrapper.get_pstate(), params);
   } else {
     render(*wrapper.get_pstate(), params);
   }
 
-  printf("Rendering is finished.\n");
   return 0;
 }

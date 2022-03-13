@@ -119,6 +119,7 @@ void display(RendererState &state, const RendererParams &params) {
     state.params.subframe_index++;
 
     if (state.params.subframe_index * state.params.samples_per_launch >= params.num_samples) {
+      CUDA_SYNC_CHECK();
       save_image(output_buffer, params);
       break;
     }
@@ -126,7 +127,7 @@ void display(RendererState &state, const RendererParams &params) {
   } while( !glfwWindowShouldClose( window ) );
   CUDA_SYNC_CHECK();
   std::chrono::duration<float> total_render_time = std::chrono::system_clock::now() - start_time;
-  printf("Render finished in %.2f mn\n", total_render_time.count() / 60.0f);
+  printf("Rendering finished in %.2f mn.\n", total_render_time.count() / 60.0f);
 }
 
 void render(RendererState &state, const RendererParams &params) {
@@ -136,12 +137,12 @@ void render(RendererState &state, const RendererParams &params) {
                                               state.params.height);
                                               
   auto start_time = std::chrono::system_clock::now();
-  while(state.params.subframe_index * state.params.samples_per_launch < params.num_samples) {
-    launchSubframe(output_buffer, state);
-    state.params.subframe_index++;
-  }
-  save_image(output_buffer, params);
+  state.params.samples_per_launch = params.num_samples;
+
+  launchSubframe(output_buffer, state);
   CUDA_SYNC_CHECK();
+  save_image(output_buffer, params);
+
   std::chrono::duration<float> total_render_time = std::chrono::system_clock::now() - start_time;
-  printf("Render finished in %.2f mn\n", total_render_time.count() / 60.0f);
+  printf("Rendering finished in %.2f mn.\n", total_render_time.count() / 60.0f);
 }
