@@ -417,8 +417,7 @@ void OptixWrapper::init_params() {
 
   this->state.params.samples_per_launch = this->params.num_samples > 16 ? 16 : this->params.num_samples;
   this->state.params.subframe_index     = 0u;
-
-  this->state.params.handle         = this->state.d_gas_handler;
+  this->state.params.handle             = this->state.d_gas_handler;
 
   sutil::Camera scamera;
   scamera.setEye(this->params.camera.eye);
