@@ -1,7 +1,7 @@
 # Optix test
 
 ## TODO
-- [ ] Pointer to Materials (avoid copy it twice)
+- [x] Pointer to Materials (avoid copy it twice)
 - [x] Tabulation size in scene_builder.{cc, hh}n
 - [x] Scene file extension
 - [x] Run arg

@@ -80,7 +80,7 @@ struct MissData {
 
 
 struct HitGroupData {
-  Material material;
+  Material* material;
   float3* vertices;
   float3* normals;
 };
@@ -108,7 +108,7 @@ struct RendererState {
   CUstream stream = 0;
 
   CUdeviceptr d_vertices = 0;
-  CUdeviceptr d_normals = 0;
+  CUdeviceptr d_normals  = 0;
   CUdeviceptr d_gas_handler = 0;
 
   OptixPipeline               pipeline = 0;

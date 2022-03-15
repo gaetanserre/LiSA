@@ -29,7 +29,7 @@ __constant__ OptixParams params;
 
 struct RayState
 {
-  Material material;
+  Material* material;
   float3 normal;
   float3 origin;
   float3 attenuation = make_float3(1.0f);
@@ -176,7 +176,7 @@ extern "C" __global__ void __miss__occlusion() {
 
 extern "C" __global__ void __closesthit__occlusion() {
   const HitGroupData* rt_data = reinterpret_cast<HitGroupData*>(optixGetSbtDataPointer());
-  if (rt_data->material.emit) {
+  if (rt_data->material->emit) {
     RayState* ray_state = get_ray_state();
     ray_state->material = rt_data->material;
     ray_state->hit = true;
@@ -194,7 +194,7 @@ extern "C" __global__ void __miss__radiance() {
 }
 
 static __forceinline__ __device__ float3 shoot_ray_to_light(RayState* ray_state,
-                                                            const Material &material)
+                                                            const Material* material)
 {
   const unsigned int count = 30u;
   for (int i = 0; i < count; i++) {
@@ -202,7 +202,7 @@ static __forceinline__ __device__ float3 shoot_ray_to_light(RayState* ray_state,
     trace_occlusion(params.handle, ray_state->origin, dir, 1e-4f, 1e16f, ray_state);
 
     if (ray_state->hit) {
-      return ray_state->material.emission_color * BRDF(ray_state->normal, dir, material);
+      return ray_state->material->emission_color * BRDF(ray_state->normal, dir, material);
     }
   }
   return make_float3(0.0f);
@@ -213,8 +213,8 @@ extern "C" __global__ void __closesthit__radiance() {
   HitGroupData* rt_data = reinterpret_cast<HitGroupData*>(optixGetSbtDataPointer());
   RayState* ray_state = get_ray_state();
 
-  if (rt_data->material.emit) {
-    ray_state->color += rt_data->material.emission_color * ray_state->attenuation;
+  if (rt_data->material->emit) {
+    ray_state->color += rt_data->material->emission_color * ray_state->attenuation;
     ray_state->done   = true;
   } else {
     const float3 ray_dir = optixGetWorldRayDirection();
@@ -223,16 +223,16 @@ extern "C" __global__ void __closesthit__radiance() {
     ray_state->normal    = get_barycentric_normal(ray_state->origin, rt_data);
 
     // If transparency
-    if (rt_data->material.alpha < 1.0f) {
+    if (rt_data->material->alpha < 1.0f) {
       float cosI = dot(ray_dir, ray_state->normal);
       float eta;
       float3 normal;
       if (cosI < 0.0f) {
        cosI = -cosI;
-       eta = 1 / rt_data->material.n;
+       eta = 1 / rt_data->material->n;
        normal = ray_state->normal;
       } else {
-        eta = rt_data->material.n;
+        eta = rt_data->material->n;
         normal = -ray_state->normal;
       }
       if (eta == 1.0f) {
@@ -245,7 +245,7 @@ extern "C" __global__ void __closesthit__radiance() {
     }
     // If opaque
     else {
-      ray_state->attenuation *= rt_data->material.diffuse_color;
+      ray_state->attenuation *= rt_data->material->diffuse_color;
 
       ray_state->color    += shoot_ray_to_light(ray_state, rt_data->material) * ray_state->attenuation;
       ray_state->direction = bounce(ray_state->direction, ray_state->normal, *(ray_state->seed), rt_data->material);

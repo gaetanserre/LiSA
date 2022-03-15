@@ -362,6 +362,14 @@ void OptixWrapper::create_shaders_binding_table() {
               cudaMemcpyHostToDevice
               ));
 
+  const size_t materials_size_in_bytes = this->params.num_materials * sizeof(Material);
+  CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&this->state.d_materials), materials_size_in_bytes));
+  CUDA_CHECK(cudaMemcpy(
+            reinterpret_cast<void*>(this->state.d_materials),
+            this->params.materials, materials_size_in_bytes,
+            cudaMemcpyHostToDevice
+            ));
+
   CUdeviceptr  d_hitgroup_records;
   const size_t hitgroup_record_size = sizeof(HitGroupRecord);
   CUDA_CHECK(cudaMalloc(
@@ -376,7 +384,7 @@ void OptixWrapper::create_shaders_binding_table() {
       const int sbt_idx = i * RAY_TYPE_COUNT + 0;  // SBT for radiance ray-type for ith material
 
       OPTIX_CHECK(optixSbtRecordPackHeader(this->state.radiance_hit_group, &hitgroup_records[sbt_idx]));
-      hitgroup_records[sbt_idx].data.material = this->params.materials[i];
+      hitgroup_records[sbt_idx].data.material = reinterpret_cast<Material*>(this->state.d_materials + i * sizeof(Material));
       hitgroup_records[sbt_idx].data.vertices = reinterpret_cast<float3*>(this->state.d_vertices);
       hitgroup_records[sbt_idx].data.normals  = reinterpret_cast<float3*>(this->state.d_normals);
     }
@@ -385,7 +393,7 @@ void OptixWrapper::create_shaders_binding_table() {
       const int sbt_idx = i * RAY_TYPE_COUNT + 1;  // SBT for occlusion ray-type for ith material
 
       OPTIX_CHECK(optixSbtRecordPackHeader(this->state.occlusion_hit_group, &hitgroup_records[sbt_idx]));
-      hitgroup_records[sbt_idx].data.material = this->params.materials[i];
+      hitgroup_records[sbt_idx].data.material = reinterpret_cast<Material*>(this->state.d_materials + i * sizeof(Material));
     }
   }
 
