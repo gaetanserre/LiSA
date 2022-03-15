@@ -384,16 +384,20 @@ void OptixWrapper::create_shaders_binding_table() {
       const int sbt_idx = i * RAY_TYPE_COUNT + 0;  // SBT for radiance ray-type for ith material
 
       OPTIX_CHECK(optixSbtRecordPackHeader(this->state.radiance_hit_group, &hitgroup_records[sbt_idx]));
-      hitgroup_records[sbt_idx].data.material = reinterpret_cast<Material*>(this->state.d_materials + i * sizeof(Material));
       hitgroup_records[sbt_idx].data.vertices = reinterpret_cast<float3*>(this->state.d_vertices);
       hitgroup_records[sbt_idx].data.normals  = reinterpret_cast<float3*>(this->state.d_normals);
+      hitgroup_records[sbt_idx].data.material = reinterpret_cast<Material*>(
+                                                  this->state.d_materials + i * sizeof(Material)
+                                                );
     }
 
     {
       const int sbt_idx = i * RAY_TYPE_COUNT + 1;  // SBT for occlusion ray-type for ith material
 
       OPTIX_CHECK(optixSbtRecordPackHeader(this->state.occlusion_hit_group, &hitgroup_records[sbt_idx]));
-      hitgroup_records[sbt_idx].data.material = reinterpret_cast<Material*>(this->state.d_materials + i * sizeof(Material));
+      hitgroup_records[sbt_idx].data.material = reinterpret_cast<Material*>(
+                                                  this->state.d_materials + i * sizeof(Material)
+                                                );
     }
   }
 
