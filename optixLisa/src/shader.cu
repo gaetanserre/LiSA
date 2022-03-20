@@ -232,6 +232,7 @@ extern "C" __global__ void __closesthit__radiance() {
        eta = 1 / rt_data->material->n;
        normal = ray_state->normal;
       } else {
+        ray_state->attenuation *= rt_data->material->diffuse_color;
         eta = rt_data->material->n;
         normal = -ray_state->normal;
       }
