@@ -2,7 +2,7 @@
 
 ## TODO
 - [x] Pointer to Materials (avoid copy it twice)
-- [x] Tabulation size in scene_builder.{cc, hh}n
+- [x] Tabulation size in scene_builder.{cc, hh}
 - [x] Scene file extension
 - [x] Run arg
 - [x] Save image
