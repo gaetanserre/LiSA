@@ -9,7 +9,7 @@
 - [x] Scene file/sample/bounce selection
 - [x] Print time elapsed
 - [ ] More example scenes
-- [ ] Focal plane
+- [ ] Focal plane & Aperture (https://github.com/knightcrawler25/GLSL-PathTracer/blob/master/src/core/Camera.cpp, https://github.com/knightcrawler25/GLSL-PathTracer/blob/master/src/shaders/tile.glsl)
 - [ ] Generalizable shader
   - [x] BDRF
   - [x] BTDF
