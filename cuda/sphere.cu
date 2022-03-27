@@ -32,7 +32,7 @@
 
 #include "sphere.h"
 
-#define float3_as_ints( u ) float_as_int( u.x ), float_as_int( u.y ), float_as_int( u.z )
+#define float3_as_ints( u ) __float_as_int( u.x ), __float_as_int( u.y ), __float_as_int( u.z )
 
 extern "C" __global__ void __intersection__sphere()
 {
@@ -81,7 +81,7 @@ extern "C" __global__ void __intersection__sphere()
         if( t > ray_tmin && t < ray_tmax )
         {
             normal = ( O + ( root1 + root11 ) * D ) / radius;
-            if( optixReportIntersection( t, 0, float3_as_ints( normal ), float_as_int( radius ) ) )
+            if( optixReportIntersection( t, 0, float3_as_ints( normal ), __float_as_int( radius ) ) )
                 check_second = false;
         }
 
@@ -91,7 +91,7 @@ extern "C" __global__ void __intersection__sphere()
             t           = root2 * l;
             normal      = ( O + root2 * D ) / radius;
             if( t > ray_tmin && t < ray_tmax )
-                optixReportIntersection( t, 0, float3_as_ints( normal ), float_as_int( radius ) );
+                optixReportIntersection( t, 0, float3_as_ints( normal ), __float_as_int( radius ) );
         }
     }
 }
