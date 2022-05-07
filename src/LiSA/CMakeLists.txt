@@ -30,7 +30,7 @@ file (GLOB_RECURSE SRC_FILES src/*.cc src/*.cu)
 
 include_directories("include")
 
-OPTIX_add_sample_executable(optixLisa target_name
+OPTIX_add_sample_executable(LiSA target_name
   ${SRC_FILES}
   OPTIONS -rdc true
 )

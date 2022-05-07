@@ -88,7 +88,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
 if( POLICY CMP0072 )
   # FindOpenGL prefers GLVND by default when available
   cmake_policy(SET CMP0072 NEW)
@@ -375,11 +374,7 @@ endfunction()
 # If you wish to start your own sample, you can copy one of the sample's directories.
 # Just make sure you rename all the occurances of the sample's name in the C code as well
 # and the CMakeLists.txt file.
-add_subdirectory(optixHello)
-add_subdirectory(optixSphere)
-add_subdirectory(optixTriangle)
-add_subdirectory(optixPathTracer)
-add_subdirectory(optixLisa)
+add_subdirectory(LiSA)
 
 # Our sutil library.  The rules to build it are found in the subdirectory.
 add_subdirectory(sutil)

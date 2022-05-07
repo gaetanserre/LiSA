@@ -73,7 +73,7 @@ void displaySubframe( sutil::CUDAOutputBuffer<uchar4>& output_buffer, sutil::GLD
 }
 
 void display(RendererState &state, const RendererParams &params) {
-  GLFWwindow* window = sutil::initUI( "optixLisa", state.params.width, state.params.height );
+  GLFWwindow* window = sutil::initUI( "LiSA", state.params.width, state.params.height );
   glfwSetKeyCallback( window, keyCallback );
   glfwSetWindowUserPointer( window, &state.params );
   //
