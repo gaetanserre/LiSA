@@ -1,8 +1,10 @@
 # LiSA
 
-LiSA is a path tracing render engine developped in C++ using Optix.
+LiSA is a path tracing render engine developped in C++ using NVidia Optix.
 
 LiSA runs in multiple CUDA cores and uses the Monte-Carlo rendering technique associated with a simple Lambertian BSDF.
+
+LiSA aims to use an unique rendering algorithm but with easely interchangable BSDF.
 
 You can see some examples of rendered images [here](#Some-images).
 
@@ -26,14 +28,6 @@ cd bin
 ./LiSA -s scene_file.rto -d (optional, display the rendering in real-time)
 ```
 
-## How it works
-- The number of passes corresponds to the number of times LiSA will compute the color of each pixel to average it.
-- The output file is a [ppm](https://fr.wikipedia.org/wiki/Portable_pixmap) image.
-- The number of samples correponds to the number of times a ray can bounce. Default is 3.
-- You have to provide a file describing the scene you want LiSA to render. You can find some examples [below](#Scene-file-example) or in the folder ````assets````.
-- In the scene file you need one camera, atleast one material and output dimension. See [Limitations](#Limitations) to learn more.
-- For more detailed information see [DOCUMENTATION.md](DOCUMENTATION.md)
-
 ## Scene file
 You need to provide all the necessary information here such as:
 - The materials
@@ -41,7 +35,7 @@ You need to provide all the necessary information here such as:
 - The camera
 - Parameters of the rendering: the number of samples,
   the maximum number of times a ray can bounce, the size of the image,
-  and the path of the image
+  and the path of the image (in [ppm](https://fr.wikipedia.org/wiki/Portable_pixmap) format)
 
 The syntax is quite free: 
 - Material names have the same constraints as C/C++ variables.
@@ -136,6 +130,13 @@ height = 2000
 output_image = ../../images/cornel_box.ppm
 ```
 
+## How it works
+The main function creates an instance of a `SceneParser` which retrieves
+all the information contained in the scene file. Then, it passes
+the necessary parameters (such as the vertices, the materials, the rendering algorithm parameters)
+to the GPU using Optix. The image is then rendered using the algorithm in `shader.cu` and the
+lambertain BSDF (`bsdfs/lambertian.cu`).
+
 ## Features
 - Lambertian BRDF.
 - FOV can be chosen.
@@ -183,6 +184,7 @@ model from https://github.com/knightcrawler25/GLSL-PathTracer
 - [x] Weird circles with Lambertian BRDF
 - [ ] Add support for texture.
 - [ ] Add the Disney's BRDF
+- [ ] Add GGX BRDF (http://cwyman.org/code/dxrTutors/tutors/Tutor14/tutorial14.md.html)
 - [ ] More example scenes
 - [ ] Focal plane & Aperture (https://github.com/knightcrawler25/GLSL-PathTracer/blob/master/src/core/Camera.cpp, https://github.com/knightcrawler25/GLSL-PathTracer/blob/master/src/shaders/tile.glsl)
 - [ ] Generalizable shader
