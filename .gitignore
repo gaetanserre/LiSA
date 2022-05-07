@@ -1,7 +1,5 @@
 *.o
 .DS_Store
-out/
 .vscode/
-dragon.rto
-dragon/
 build/
+*.ppm
