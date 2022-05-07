@@ -1,6 +1,6 @@
 # LiSA
 
-LiSA is a path tracing render engine developped in C++ using Optix.
+LiSA is a path tracing render engine developped in C++ using NVidia Optix.
 
 LiSA runs in multiple CUDA cores and uses the Monte-Carlo rendering technique associated with a simple Lambertian BSDF.
 
