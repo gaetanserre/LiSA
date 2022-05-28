@@ -138,7 +138,7 @@ to the GPU using Optix. The image is then rendered using the algorithm in `shade
 lambertain BSDF (`bsdfs/lambertian.cu`).
 
 ## Features
-- Lambertian BRDF.
+- Lambertian BSDF.
 - FOV can be chosen.
 - Anti aliasing.
 - Focal plane
@@ -152,9 +152,6 @@ There are some limitations to LiSA:
 - If you have too much triangles for your GPU, LiSA wont work
 
 ## Some images
-In order to use these scenes files, you to be inside the `img/` folder.
-
-
 ![](img/cornel_box.png)
 
 model from https://benedikt-bitterli.me/resources/
