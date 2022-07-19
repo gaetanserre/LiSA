@@ -190,7 +190,7 @@ model from https://github.com/knightcrawler25/GLSL-PathTracer
   - [ ] More light when more triangles?
   - [ ] Refractive index of "out" material
 
-## Credits
+## Acknowledgments
 - [GLSL Path tracer](https://github.com/knightcrawler25/GLSL-PathTracer). An amazing renderer. I took a lot of .obj for testing LiSA from here. 
 - [Scratchpixel 2.0](https://www.scratchapixel.com/) for their lessons about ray tracing, monte carlo, etc..
 - [Tyro](https://wwwtyro.net/2018/02/25/caffeine.html) for the excellent tutorial and explanations
