@@ -148,7 +148,7 @@ lambertain BSDF (`bsdfs/lambertian.cu`).
 
 ## Limitations
 There are some limitations to LiSA:
-- The obj file HAS to be composed of triangles
+- The obj file MUST be composed of triangles
 - If you have too much triangles for your GPU, LiSA wont work
 
 ## Some images
