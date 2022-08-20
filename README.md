@@ -30,10 +30,10 @@ cd bin
 
 ## Scene file
 You need to provide all the necessary information here such as:
-- The materials
-- The meshes
-- The camera
-- Parameters of the rendering: the number of samples,
+- materials
+- meshes
+- camera
+- parameters of the rendering: the number of samples,
   the maximum number of times a ray can bounce, the size of the image,
   and the path of the image (in [ppm](https://fr.wikipedia.org/wiki/Portable_pixmap) format)
 
