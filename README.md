@@ -38,8 +38,8 @@ You need to provide all the necessary information here such as:
   and the path of the image (in [ppm](https://fr.wikipedia.org/wiki/Portable_pixmap) format)
 
 The syntax is quite free: 
-- Material names have the same constraints as C/C++ variables.
-- You can skip lines or add as many spaces as you want.
+- Material names have the same constraints as C/C++ variables
+- You can skip lines or add as many spaces as you want
 - Any text between ```/*``` and ```*/``` is treated as a comment
 
 ### Scene file example
