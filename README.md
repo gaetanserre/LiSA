@@ -13,7 +13,7 @@ You can see some examples of rendered images [here](#Some-images).
 ### Linux
 You need CUDA, OpenGL, GLFW, Xinerama and Xcursor to compile this project.
 
-For Ubuntu or Debian distribution run: 
+For Debian distribution run: 
 ```bash
 sudo apt install nvidia-cuda-toolkit freeglut3-dev libglfw3-dev libxinerama-dev libxcursor-dev
 ```
