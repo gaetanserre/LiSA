@@ -138,18 +138,18 @@ to the GPU using Optix. The image is then rendered using the algorithm in `shade
 lambertain BSDF (`bsdfs/lambertian.cu`).
 
 ## Features
-- Lambertian BSDF.
-- FOV can be chosen.
-- Anti aliasing.
-- Focal plane
-- Only your GPU memory limits the number of triangles per scene.
-- Transparency/Refraction
-- Thanks to Optix, LiSA is fast
+- lambertian BSDF
+- FOV can be chosen
+- anti aliasing
+- focal plane
+- only your GPU memory limits the number of triangles per scene
+- transparency/Refraction
+- thanks to Optix, LiSA is fast
 
 ## Limitations
 There are some limitations to LiSA:
-- The obj file MUST be composed of triangles
-- If you have too much triangles for your GPU, LiSA wont work
+- the obj file MUST be composed of triangles
+- if you have too much triangles for your GPU, LiSA wont work
 
 ## Some images
 ![](img/cornel_box.png)
@@ -167,28 +167,28 @@ model from https://github.com/knightcrawler25/GLSL-PathTracer
 ![](img/tropical_island.png)
 
 ## TODO list
-- [x] Anti aliasing.
-- [x] Focal plane
-- [x] Optimize the computation time.
-- [x] Add transparency and refraction.
-- [x] Pointer to Materials (avoid copy it twice)
-- [x] Tabulation size in scene_builder.{cc, hh}
-- [x] Scene file extension
-- [x] Run arg
-- [x] Save image
-- [x] Scene file/sample/bounce selection
-- [x] Print time elapsed
-- [x] Weird circles with Lambertian BRDF
-- [ ] Add support for texture.
-- [ ] Add the Disney's BRDF
-- [ ] Add GGX BRDF (http://cwyman.org/code/dxrTutors/tutors/Tutor14/tutorial14.md.html)
-- [ ] More example scenes
-- [ ] Focal plane & Aperture (https://github.com/knightcrawler25/GLSL-PathTracer/blob/master/src/core/Camera.cpp, https://github.com/knightcrawler25/GLSL-PathTracer/blob/master/src/shaders/tile.glsl)
-- [ ] Generalizable shader
+- [x] anti aliasing
+- [x] focal plane
+- [x] optimize the computation time
+- [x] add transparency and refraction
+- [x] pointer to Materials (avoid copy it twice)
+- [x] tabulation size in scene_builder.{cc, hh}
+- [x] scene file extension
+- [x] run arg
+- [x] save image
+- [x] scene file/sample/bounce selection
+- [x] print time elapsed
+- [x] weird circles with Lambertian BRDF
+- [ ] add support for texture
+- [ ] add the Disney's BRDF
+- [ ] add GGX BRDF (http://cwyman.org/code/dxrTutors/tutors/Tutor14/tutorial14.md.html)
+- [ ] more example scenes
+- [ ] focal plane & Aperture (https://github.com/knightcrawler25/GLSL-PathTracer/blob/master/src/core/Camera.cpp, https://github.com/knightcrawler25/GLSL-PathTracer/blob/master/src/shaders/tile.glsl)
+- [ ] generalizable shader
   - [x] BDRF
   - [x] BTDF
-  - [ ] More light when more triangles?
-  - [ ] Refractive index of "out" material
+  - [ ] more light when more triangles?
+  - [ ] refractive index of "out" material
 
 ## Acknowledgments
 - [GLSL Path tracer](https://github.com/knightcrawler25/GLSL-PathTracer). An amazing renderer. I took a lot of .obj for testing LiSA from here. 
