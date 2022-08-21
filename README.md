@@ -171,7 +171,7 @@ model from https://github.com/knightcrawler25/GLSL-PathTracer
 - [x] focal plane
 - [x] optimize the computation time
 - [x] add transparency and refraction
-- [x] pointer to Materials (avoid copy it twice)
+- [x] pointer to materials (avoid copy it twice)
 - [x] tabulation size in scene_builder.{cc, hh}
 - [x] scene file extension
 - [x] run arg
